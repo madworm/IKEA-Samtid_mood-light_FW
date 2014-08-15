@@ -1,0 +1,29 @@
+# See: http://code.google.com/p/arduino/wiki/Platforms
+
+##############################################################
+#
+# to activate this board, select it and use:
+#
+# 'Burn Bootloader' just once
+# Make sure to select your programmer type in the menu!
+# this makes sure the correct FUSE settings are used
+#
+IKEA-Samtid-mood-light.name=IKEA Samtid mood-light - ATmega168 / 16MHz Quartz / Optiboot [default]
+IKEA-Samtid-mood-light.upload.protocol=arduino
+IKEA-Samtid-mood-light.upload.maximum_size=15872
+IKEA-Samtid-mood-light.upload.speed=115200
+IKEA-Samtid-mood-light.bootloader.low_fuses=0xFF
+IKEA-Samtid-mood-light.bootloader.high_fuses=0xDD
+IKEA-Samtid-mood-light.bootloader.extended_fuses=0x04
+IKEA-Samtid-mood-light.bootloader.path=optiboot
+IKEA-Samtid-mood-light.bootloader.file=optiboot_diecimila.hex
+IKEA-Samtid-mood-light.bootloader.unlock_bits=0x3F
+IKEA-Samtid-mood-light.bootloader.lock_bits=0x0F
+IKEA-Samtid-mood-light.build.mcu=atmega168
+IKEA-Samtid-mood-light.build.f_cpu=16000000L
+IKEA-Samtid-mood-light.build.core=arduino
+IKEA-Samtid-mood-light.build.variant=eightanaloginputs
+#
+#
+#
+##############################################################
