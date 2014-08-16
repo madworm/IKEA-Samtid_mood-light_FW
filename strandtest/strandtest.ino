@@ -1,8 +1,13 @@
 // Install: https://github.com/adafruit/Adafruit_NeoPixel
 #include <Adafruit_NeoPixel.h>
+#include <stdint.h>
 
 #define PIN 1	// adapted to IKEA-Samtid_mood-light hardware
 #define LEDS 64 // adjust to number of installed WS2812B [1-64]
+uint16_t time_delay = 50;
+#define M_button 12
+#define E_button 11
+#define PRESSED 0
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -19,23 +24,44 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(LEDS, PIN, NEO_GRB + NEO_KHZ800);
 // on a live circuit...if you must, connect GND first.
 
 void setup() {
+  pinMode(M_button,INPUT_PULLUP);
+  pinMode(E_button,INPUT_PULLUP);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 }
 
 void loop() {
+  
+  if( (digitalRead(M_button) == PRESSED) && (digitalRead(E_button) == PRESSED) ) {
+    uint8_t i;
+    uint8_t c;
+    
+    for(c=0; c < 255; c++) {
+      for(i=0; i < strip.numPixels(); i++) {
+        strip.setPixelColor(i,c,c,c);
+      }
+      strip.show();
+      delay(8);
+    }
+    
+  } else if(digitalRead(M_button) == PRESSED) {
+    time_delay = 200;  
+  } else if(digitalRead(E_button) == PRESSED) {
+    time_delay = 10;
+  }
+  
   // Some example procedures showing how to display to the pixels:
-  colorWipe(strip.Color(255, 0, 0), 50); // Red
-  colorWipe(strip.Color(0, 255, 0), 50); // Green
-  colorWipe(strip.Color(0, 0, 255), 50); // Blue
+  colorWipe(strip.Color(255, 0, 0), time_delay); // Red
+  colorWipe(strip.Color(0, 255, 0), time_delay); // Green
+  colorWipe(strip.Color(0, 0, 255), time_delay); // Blue
   // Send a theater pixel chase in...
-  theaterChase(strip.Color(127, 127, 127), 50); // White
-  theaterChase(strip.Color(127,   0,   0), 50); // Red
-  theaterChase(strip.Color(  0,   0, 127), 50); // Blue
+  theaterChase(strip.Color(127, 127, 127), time_delay); // White
+  theaterChase(strip.Color(127,   0,   0), time_delay); // Red
+  theaterChase(strip.Color(  0,   0, 127), time_delay); // Blue
 
-  rainbow(20);
-  rainbowCycle(20);
-  theaterChaseRainbow(50);
+  rainbow(time_delay);
+  rainbowCycle(time_delay);
+  theaterChaseRainbow(time_delay);
 }
 
 // Fill the dots one after the other with a color
