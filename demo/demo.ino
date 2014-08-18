@@ -1,6 +1,7 @@
-// Install: https://github.com/adafruit/Adafruit_NeoPixel
-#include <Adafruit_NeoPixel.h>
+// Install: Adafruit NeoPixel library
+// Install: ClickButton library
 #include <stdint.h>
+#include <Adafruit_NeoPixel.h>
 #include <ClickButton.h>
 
 #define PIN 1			// adapted to IKEA-Samtid_mood-light hardware
@@ -17,6 +18,8 @@
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 Adafruit_NeoPixel strip(LEDS, PIN, NEO_GRB + NEO_KHZ800);
+ClickButton button1(M_BUTTON, LOW, CLICKBTN_PULLUP);
+ClickButton button2(E_BUTTON, LOW, CLICKBTN_PULLUP);
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
@@ -25,8 +28,6 @@ Adafruit_NeoPixel strip(LEDS, PIN, NEO_GRB + NEO_KHZ800);
 
 void setup()
 {
-        ClickButton button1(M_BUTTON, LOW, CLICKBTN_PULLUP);
-        ClickButton button2(E_BUTTON, LOW, CLICKBTN_PULLUP);
 	strip.begin();
 	strip.show();		// Initialize all pixels to 'off'
 }
