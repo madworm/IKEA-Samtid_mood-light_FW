@@ -4,6 +4,7 @@
 
 #define PIN 1			// adapted to IKEA-Samtid_mood-light hardware
 #define LEDS 64			// adjust to number of installed WS2812B [1-64]
+uint16_t time_delay = 50;
 #define M_button 12
 #define E_button 11
 #define PRESSED 0
@@ -33,7 +34,6 @@ void setup()
 void loop()
 {
 	static uint8_t mode = 0;
-	uint16_t time_delay = 50;
 
 	if ((digitalRead(M_button) == PRESSED)
 	    && (digitalRead(E_button) == PRESSED)) {
@@ -54,35 +54,36 @@ void loop()
 		time_delay = 10;
 	}
 
-	while (1) {
-		switch (mode) {
+
+	while(1) {
+	switch(mode) {
 		case 0:
 			colorWipe(strip.Color(255, 0, 0), time_delay);	// Red
 			colorWipe(strip.Color(0, 255, 0), time_delay);	// Green
 			colorWipe(strip.Color(0, 0, 255), time_delay);	// Blue
-			break;
+		break;
 		case 1:
 			theaterChase(strip.Color(127, 127, 127), time_delay);	// White
-			break;
+		break;
 		case 2:
 			theaterChase(strip.Color(127, 0, 0), time_delay);	// Red
-			break;
+		break;
 		case 3:
 			theaterChase(strip.Color(0, 0, 127), time_delay);	// Blue
-			break;
+		break;
 		case 4:
 			rainbow(time_delay);
-			break;
+		break;
 		case 5:
 			rainbowCycle(time_delay);
-			break;
+		break;
 		case 6:
 			theaterChaseRainbow(time_delay);
-			break;
+		break;
 		default:
-			break;
-		}
-	}
+		break;
+	}	
+}
 }
 
 // Fill the dots one after the other with a color
@@ -176,7 +177,4 @@ uint32_t Wheel(byte WheelPos)
 		WheelPos -= 170;
 		return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
 	}
-}
-
-void poll_button(void) {
 }
