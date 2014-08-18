@@ -1,12 +1,12 @@
 // Install: https://github.com/adafruit/Adafruit_NeoPixel
 #include <Adafruit_NeoPixel.h>
 #include <stdint.h>
-#include "strandtest.h"
+#include <ClickButton.h>
 
 #define PIN 1			// adapted to IKEA-Samtid_mood-light hardware
 #define LEDS 64			// adjust to number of installed WS2812B [1-64]
-#define M_button 12
-#define E_button 11
+#define M_BUTTON 12
+#define E_BUTTON 11
 #define PRESSED 0
 
 // Parameter 1 = number of pixels in strip
@@ -16,7 +16,7 @@
 //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(LEDS, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(LEDS, PIN, NEO_GRB + NEO_KHZ800);
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
@@ -25,8 +25,8 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(LEDS, PIN, NEO_GRB + NEO_KHZ800);
 
 void setup()
 {
-	pinMode(M_button, INPUT_PULLUP);
-	pinMode(E_button, INPUT_PULLUP);
+        ClickButton button1(M_BUTTON, LOW, CLICKBTN_PULLUP);
+        ClickButton button2(E_BUTTON, LOW, CLICKBTN_PULLUP);
 	strip.begin();
 	strip.show();		// Initialize all pixels to 'off'
 }
@@ -36,8 +36,8 @@ void loop()
 	static uint8_t mode = 0;
 	uint16_t time_delay = 50;
 
-	if ((digitalRead(M_button) == PRESSED)
-	    && (digitalRead(E_button) == PRESSED)) {
+	if ((digitalRead(M_BUTTON) == PRESSED)
+	    && (digitalRead(E_BUTTON) == PRESSED)) {
 		uint8_t i;
 		uint8_t c;
 
@@ -49,9 +49,9 @@ void loop()
 			delay(8);
 		}
 
-	} else if (digitalRead(M_button) == PRESSED) {
+	} else if (digitalRead(M_BUTTON) == PRESSED) {
 		time_delay = 200;
-	} else if (digitalRead(E_button) == PRESSED) {
+	} else if (digitalRead(E_BUTTON) == PRESSED) {
 		time_delay = 10;
 	}
 
@@ -92,12 +92,6 @@ void colorWipe(uint32_t c, uint8_t wait)
 	for (uint16_t i = 0; i < strip.numPixels(); i++) {
 		strip.setPixelColor(i, c);
 		strip.show();
-		switch (poll_button()) {
-		case NO_BUTTON_PRESSED:
-			break;
-		default:
-			break;
-		}
 		delay(wait);
 	}
 }
@@ -111,12 +105,6 @@ void rainbow(uint8_t wait)
 			strip.setPixelColor(i, Wheel((i + j) & 255));
 		}
 		strip.show();
-		switch (poll_button()) {
-		case NO_BUTTON_PRESSED:
-			break;
-		default:
-			break;
-		}
 		delay(wait);
 	}
 }
@@ -134,12 +122,6 @@ void rainbowCycle(uint8_t wait)
 						   j) & 255));
 		}
 		strip.show();
-		switch (poll_button()) {
-		case NO_BUTTON_PRESSED:
-			break;
-		default:
-			break;
-		}
 		delay(wait);
 	}
 }
@@ -195,10 +177,4 @@ uint32_t Wheel(byte WheelPos)
 		WheelPos -= 170;
 		return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
 	}
-}
-
-button_status_t poll_button(void)
-{
-	button_status_t button_status = NO_BUTTON_PRESSED;
-	return button_status;
 }
