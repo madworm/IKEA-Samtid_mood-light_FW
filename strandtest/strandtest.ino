@@ -1,6 +1,7 @@
 // Install: https://github.com/adafruit/Adafruit_NeoPixel
 #include <Adafruit_NeoPixel.h>
 #include <stdint.h>
+#include "strandtest.h"
 
 #define PIN 1			// adapted to IKEA-Samtid_mood-light hardware
 #define LEDS 64			// adjust to number of installed WS2812B [1-64]
@@ -178,5 +179,8 @@ uint32_t Wheel(byte WheelPos)
 	}
 }
 
-void poll_button(void) {
+button_status_t poll_button(void)
+{
+	button_status_t button_status = NO_BUTTON_PRESSED;
+	return button_status;
 }
