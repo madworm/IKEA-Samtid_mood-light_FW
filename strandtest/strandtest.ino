@@ -92,6 +92,12 @@ void colorWipe(uint32_t c, uint8_t wait)
 	for (uint16_t i = 0; i < strip.numPixels(); i++) {
 		strip.setPixelColor(i, c);
 		strip.show();
+		switch (poll_button()) {
+		case NO_BUTTON_PRESSED:
+			break;
+		default:
+			break;
+		}
 		delay(wait);
 	}
 }
@@ -105,6 +111,12 @@ void rainbow(uint8_t wait)
 			strip.setPixelColor(i, Wheel((i + j) & 255));
 		}
 		strip.show();
+		switch (poll_button()) {
+		case NO_BUTTON_PRESSED:
+			break;
+		default:
+			break;
+		}
 		delay(wait);
 	}
 }
@@ -122,6 +134,12 @@ void rainbowCycle(uint8_t wait)
 						   j) & 255));
 		}
 		strip.show();
+		switch (poll_button()) {
+		case NO_BUTTON_PRESSED:
+			break;
+		default:
+			break;
+		}
 		delay(wait);
 	}
 }
