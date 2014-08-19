@@ -28,30 +28,30 @@ ClickButton button_e(E_BUTTON, LOW, CLICKBTN_PULLUP);
 
 void setup()
 {
-        button_m.debounceTime   = 20;   // Debounce timer in ms
-        button_m.multiclickTime = 250;  // Time limit for multi clicks
-        button_m.longClickTime  = 1000;
-        button_e.debounceTime   = 20;   // Debounce timer in ms
-        button_e.multiclickTime = 250;  // Time limit for multi clicks
-        button_e.longClickTime  = 1000;
-       	strip.begin();
+	button_m.debounceTime = 20;	// Debounce timer in ms
+	button_m.multiclickTime = 250;	// Time limit for multi clicks
+	button_m.longClickTime = 1000;
+	button_e.debounceTime = 20;	// Debounce timer in ms
+	button_e.multiclickTime = 250;	// Time limit for multi clicks
+	button_e.longClickTime = 1000;
+	strip.begin();
 	strip.show();		// Initialize all pixels to 'off'
-        pinMode(13,OUTPUT);
+	pinMode(13, OUTPUT);
 }
 
 void loop()
 {
 	static uint8_t mode = 0;
 	uint16_t time_delay = 50;
-        int8_t clicks;
+	int8_t clicks;
 
-        button_m.Update();
-        button_e.Update();
-        delay(50);
-        button_m.Update();
-        button_e.Update();
+	button_m.Update();
+	button_e.Update();
+	delay(50);
+	button_m.Update();
+	button_e.Update();
 
-	if(button_m.depressed && button_e.depressed) {
+	if (button_m.depressed && button_e.depressed) {
 		uint8_t i;
 		uint8_t c;
 
@@ -70,68 +70,71 @@ void loop()
 	}
 
 	while (1) {
-  
-                button_m.Update();
-                button_e.Update();
-                
-                if (button_m.clicks != 0) {
-                  clicks = button_m.clicks;
-                }
-                
-                if(clicks == 2) {
-                  mode = (mode + 1) % 4;
-                  digitalWrite(13,!digitalRead(13));
-                  clicks = 0;
-                }
 
-                switch (mode) {
-		case 0:
-			rainbow_NB(10);
-			break;
-		case 1:
-			rainbow_NB(250);
-			break;
-                case 2:
-                        rainbowCycle_NB(10);
-                        break;
-                case 3:
-                        rainbowCycle_NB(250);
-                        break;
-		default:
-			break;
+		button_m.Update();
+		button_e.Update();
+
+		if (button_m.clicks != 0) {
+			clicks = button_m.clicks;
 		}
-                
-                /*
-                
+
+		if (clicks == 2) {
+			mode = (mode + 1) % 5;
+			digitalWrite(13, !digitalRead(13));
+			clicks = 0;
+		}
+
 		switch (mode) {
 		case 0:
-			colorWipe(strip.Color(255, 0, 0), time_delay);	// Red
-			colorWipe(strip.Color(0, 255, 0), time_delay);	// Green
-			colorWipe(strip.Color(0, 0, 255), time_delay);	// Blue
+			black_to_white_NB(50);
 			break;
 		case 1:
-			theaterChase(strip.Color(127, 127, 127), time_delay);	// White
+			rainbow_NB(10);
 			break;
 		case 2:
-			theaterChase(strip.Color(127, 0, 0), time_delay);	// Red
+			rainbow_NB(250);
 			break;
 		case 3:
-			theaterChase(strip.Color(0, 0, 127), time_delay);	// Blue
+			rainbowCycle_NB(10);
 			break;
 		case 4:
-			rainbow(time_delay);
-			break;
-		case 5:
-			rainbowCycle(time_delay);
-			break;
-		case 6:
-			theaterChaseRainbow(time_delay);
+			rainbowCycle_NB(250);
 			break;
 		default:
 			break;
 		}
-        
-                */
+
+		/*
+
+		   switch (mode) {
+		   case 0:
+		   colorWipe(strip.Color(255, 0, 0), time_delay);       // Red
+		   colorWipe(strip.Color(0, 255, 0), time_delay);       // Green
+		   colorWipe(strip.Color(0, 0, 255), time_delay);       // Blue
+		   break;
+		   case 1:
+		   theaterChase(strip.Color(127, 127, 127), time_delay);        // White
+		   break;
+		   case 2:
+		   theaterChase(strip.Color(127, 0, 0), time_delay);    // Red
+		   break;
+		   case 3:
+		   theaterChase(strip.Color(0, 0, 127), time_delay);    // Blue
+		   break;
+		   case 4:
+		   rainbow(time_delay);
+		   break;
+		   case 5:
+		   rainbowCycle(time_delay);
+		   break;
+		   case 6:
+		   theaterChaseRainbow(time_delay);
+		   break;
+		   default:
+		   break;
+		   }
+
+		 */
 	}
 }
 
@@ -141,43 +144,66 @@ void colorWipe(uint32_t c, uint8_t wait)
 	for (uint16_t i = 0; i < strip.numPixels(); i++) {
 		strip.setPixelColor(i, c);
 		strip.show();
-                button_m.Update();
-                button_e.Update();
-                if(button_m.depressed) {
-                  break;
-                }                
+		button_m.Update();
+		button_e.Update();
+		if (button_m.depressed) {
+			break;
+		}
 		delay(wait);
 	}
 }
 
+void black_to_white_NB(uint8_t wait)
+{
+	uint16_t i;
+	static uint16_t c = 0;
+	static uint32_t last_run = 0;
+	uint32_t time_now = millis();
+
+	if ((c < 256) && ((time_now - last_run) > wait)) {
+
+		for (i = 0; i < strip.numPixels(); i++) {
+			strip.setPixelColor(i, c, c, c);
+		}
+		strip.show();
+
+		c++;
+		if (c == 256) {
+			c = 255;	// only fade in ONCE
+		}
+		last_run = millis();
+	}
+
+}
+
 void rainbow_NB(uint8_t wait)
 {
-        uint16_t i;
-        static uint16_t j = 0;
-        static uint32_t last_run = 0;
-        uint32_t time_now = millis();
+	uint16_t i;
+	static uint16_t j = 0;
+	static uint32_t last_run = 0;
+	uint32_t time_now = millis();
 
-        if( (j < 256) && ( (time_now - last_run) > wait) ) {
+	if ((j < 256) && ((time_now - last_run) > wait)) {
 		for (i = 0; i < strip.numPixels(); i++) {
 			strip.setPixelColor(i, Wheel((i + j) & 255));
 		}
 		strip.show();
-                j++;
-                if( j == 256 ) {
-                  j = 0;
-                }
-                last_run = millis();
+		j++;
+		if (j == 256) {
+			j = 0;
+		}
+		last_run = millis();
 	}
 }
 
 void rainbowCycle_NB(uint8_t wait)
 {
-        uint16_t i;
-        static uint16_t j = 0;
-        static uint32_t last_run = 0;
-        uint32_t time_now = millis();
-  
-        if( (j < 256) && ( (time_now - last_run) > wait) ) {
+	uint16_t i;
+	static uint16_t j = 0;
+	static uint32_t last_run = 0;
+	uint32_t time_now = millis();
+
+	if ((j < 256) && ((time_now - last_run) > wait)) {
 		for (i = 0; i < strip.numPixels(); i++) {
 			strip.setPixelColor(i,
 					    Wheel(((i * 256 /
@@ -185,12 +211,12 @@ void rainbowCycle_NB(uint8_t wait)
 						   j) & 255));
 		}
 		strip.show();
-                j++;
-                if( j == 256 ) {
-                  j = 0;
-                }
-                last_run = millis();
-        }
+		j++;
+		if (j == 256) {
+			j = 0;
+		}
+		last_run = millis();
+	}
 }
 
 //Theatre-style crawling lights.
@@ -202,13 +228,13 @@ void theaterChase(uint32_t c, uint8_t wait)
 				strip.setPixelColor(i + q, c);	//turn every third pixel on
 			}
 			strip.show();
-        
-                        button_m.Update();
-                        button_e.Update();
-                        
-                        if(button_m.depressed) {
-                          break;
-                        }                        
+
+			button_m.Update();
+			button_e.Update();
+
+			if (button_m.depressed) {
+				break;
+			}
 
 			delay(wait);
 
@@ -229,13 +255,13 @@ void theaterChaseRainbow(uint8_t wait)
 			}
 			strip.show();
 
-                        button_m.Update();
-                        button_e.Update();
-                        
-                        if(button_m.depressed) {
-                          break;
-                        }                        
-    
+			button_m.Update();
+			button_e.Update();
+
+			if (button_m.depressed) {
+				break;
+			}
+
 			delay(wait);
 
 			for (int i = 0; i < strip.numPixels(); i = i + 3) {
