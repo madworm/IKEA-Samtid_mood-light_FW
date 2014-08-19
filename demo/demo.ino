@@ -79,7 +79,7 @@ void loop()
                 }
                 
                 if(clicks == 2) {
-                  mode = (mode + 1) % 2;
+                  mode = (mode + 1) % 4;
                   digitalWrite(13,!digitalRead(13));
                   clicks = 0;
                 }
@@ -91,6 +91,12 @@ void loop()
 		case 1:
 			rainbow_NB(250);
 			break;
+                case 2:
+                        rainbowCycle_NB(10);
+                        break;
+                case 3:
+                        rainbowCycle_NB(250);
+                        break;
 		default:
 			break;
 		}
@@ -164,12 +170,14 @@ void rainbow_NB(uint8_t wait)
 	}
 }
 
-// Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait)
+void rainbowCycle_NB(uint8_t wait)
 {
-	uint16_t i, j;
-
-	for (j = 0; j < 256 * 5; j++) {	// 5 cycles of all colors on wheel
+        uint16_t i;
+        static uint16_t j = 0;
+        static uint32_t last_run = 0;
+        uint32_t time_now = millis();
+  
+        if( (j < 256) && ( (time_now - last_run) > wait) ) {
 		for (i = 0; i < strip.numPixels(); i++) {
 			strip.setPixelColor(i,
 					    Wheel(((i * 256 /
@@ -177,13 +185,12 @@ void rainbowCycle(uint8_t wait)
 						   j) & 255));
 		}
 		strip.show();
-                button_m.Update();
-                button_e.Update();
-                if(button_m.depressed) {
-                  break;
-                }                
-		delay(wait);
-	}
+                j++;
+                if( j == 256 ) {
+                  j = 0;
+                }
+                last_run = millis();
+        }
 }
 
 //Theatre-style crawling lights.
