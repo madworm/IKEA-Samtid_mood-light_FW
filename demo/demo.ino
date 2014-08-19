@@ -18,8 +18,8 @@
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 Adafruit_NeoPixel strip(LEDS, PIN, NEO_GRB + NEO_KHZ800);
-ClickButton button1(M_BUTTON, LOW, CLICKBTN_PULLUP);
-ClickButton button2(E_BUTTON, LOW, CLICKBTN_PULLUP);
+ClickButton button_m(M_BUTTON, LOW, CLICKBTN_PULLUP);
+ClickButton button_e(E_BUTTON, LOW, CLICKBTN_PULLUP);
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
@@ -28,17 +28,30 @@ ClickButton button2(E_BUTTON, LOW, CLICKBTN_PULLUP);
 
 void setup()
 {
-	strip.begin();
+        button_m.debounceTime   = 20;   // Debounce timer in ms
+        button_m.multiclickTime = 250;  // Time limit for multi clicks
+        button_m.longClickTime  = 1000;
+        button_e.debounceTime   = 20;   // Debounce timer in ms
+        button_e.multiclickTime = 250;  // Time limit for multi clicks
+        button_e.longClickTime  = 1000;
+       	strip.begin();
 	strip.show();		// Initialize all pixels to 'off'
+        pinMode(13,OUTPUT);
 }
 
 void loop()
 {
 	static uint8_t mode = 0;
 	uint16_t time_delay = 50;
+        int8_t clicks;
 
-	if ((digitalRead(M_BUTTON) == PRESSED)
-	    && (digitalRead(E_BUTTON) == PRESSED)) {
+        button_m.Update();
+        button_e.Update();
+        delay(50);
+        button_m.Update();
+        button_e.Update();
+
+	if(button_m.depressed && button_e.depressed) {
 		uint8_t i;
 		uint8_t c;
 
@@ -50,13 +63,30 @@ void loop()
 			delay(8);
 		}
 
-	} else if (digitalRead(M_BUTTON) == PRESSED) {
+	} else if (button_e.depressed) {
 		time_delay = 200;
-	} else if (digitalRead(E_BUTTON) == PRESSED) {
+	} else if (button_m.depressed) {
 		time_delay = 10;
 	}
 
 	while (1) {
+  
+          while(1) {
+                button_m.Update();
+                button_e.Update();
+                
+                if (button_m.clicks != 0) {
+                  clicks = button_m.clicks;
+                }
+                
+                if(clicks == 2) {
+                  mode = (mode + 1) % 6;
+                  digitalWrite(13,!digitalRead(13));
+                  clicks = 0;
+                }
+                
+          }
+                
 		switch (mode) {
 		case 0:
 			colorWipe(strip.Color(255, 0, 0), time_delay);	// Red
@@ -93,6 +123,11 @@ void colorWipe(uint32_t c, uint8_t wait)
 	for (uint16_t i = 0; i < strip.numPixels(); i++) {
 		strip.setPixelColor(i, c);
 		strip.show();
+                button_m.Update();
+                button_e.Update();
+                if(button_m.depressed) {
+                  break;
+                }                
 		delay(wait);
 	}
 }
@@ -106,6 +141,11 @@ void rainbow(uint8_t wait)
 			strip.setPixelColor(i, Wheel((i + j) & 255));
 		}
 		strip.show();
+                button_m.Update();
+                button_e.Update();
+                if(button_m.depressed) {
+                  break;
+                }
 		delay(wait);
 	}
 }
@@ -123,6 +163,11 @@ void rainbowCycle(uint8_t wait)
 						   j) & 255));
 		}
 		strip.show();
+                button_m.Update();
+                button_e.Update();
+                if(button_m.depressed) {
+                  break;
+                }                
 		delay(wait);
 	}
 }
@@ -136,6 +181,13 @@ void theaterChase(uint32_t c, uint8_t wait)
 				strip.setPixelColor(i + q, c);	//turn every third pixel on
 			}
 			strip.show();
+        
+                        button_m.Update();
+                        button_e.Update();
+                        
+                        if(button_m.depressed) {
+                          break;
+                        }                        
 
 			delay(wait);
 
@@ -156,6 +208,13 @@ void theaterChaseRainbow(uint8_t wait)
 			}
 			strip.show();
 
+                        button_m.Update();
+                        button_e.Update();
+                        
+                        if(button_m.depressed) {
+                          break;
+                        }                        
+    
 			delay(wait);
 
 			for (int i = 0; i < strip.numPixels(); i = i + 3) {
