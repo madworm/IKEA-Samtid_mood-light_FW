@@ -71,7 +71,6 @@ void loop()
 
 	while (1) {
   
-          while(1) {
                 button_m.Update();
                 button_e.Update();
                 
@@ -80,12 +79,23 @@ void loop()
                 }
                 
                 if(clicks == 2) {
-                  mode = (mode + 1) % 6;
+                  mode = (mode + 1) % 2;
                   digitalWrite(13,!digitalRead(13));
                   clicks = 0;
                 }
+
+                switch (mode) {
+		case 0:
+			rainbow_NB(10);
+			break;
+		case 1:
+			rainbow_NB(250);
+			break;
+		default:
+			break;
+		}
                 
-          }
+                /*
                 
 		switch (mode) {
 		case 0:
@@ -114,6 +124,8 @@ void loop()
 		default:
 			break;
 		}
+        
+                */
 	}
 }
 
@@ -132,21 +144,23 @@ void colorWipe(uint32_t c, uint8_t wait)
 	}
 }
 
-void rainbow(uint8_t wait)
+void rainbow_NB(uint8_t wait)
 {
-	uint16_t i, j;
+        uint16_t i;
+        static uint16_t j = 0;
+        static uint32_t last_run = 0;
+        uint32_t time_now = millis();
 
-	for (j = 0; j < 256; j++) {
+        if( (j < 256) && ( (time_now - last_run) > wait) ) {
 		for (i = 0; i < strip.numPixels(); i++) {
 			strip.setPixelColor(i, Wheel((i + j) & 255));
 		}
 		strip.show();
-                button_m.Update();
-                button_e.Update();
-                if(button_m.depressed) {
-                  break;
+                j++;
+                if( j == 256 ) {
+                  j = 0;
                 }
-		delay(wait);
+                last_run = millis();
 	}
 }
 
