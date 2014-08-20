@@ -51,24 +51,6 @@ void loop()
 	button_m.Update();
 	button_e.Update();
 
-	if (button_m.depressed && button_e.depressed) {
-		uint8_t i;
-		uint8_t c;
-
-		for (c = 0; c < 255; c++) {
-			for (i = 0; i < strip.numPixels(); i++) {
-				strip.setPixelColor(i, c, c, c);
-			}
-			strip.show();
-			delay(8);
-		}
-
-	} else if (button_e.depressed) {
-		time_delay = 200;
-	} else if (button_m.depressed) {
-		time_delay = 10;
-	}
-
 	while (1) {
 
 		button_m.Update();
@@ -115,12 +97,6 @@ void loop()
 		   case 3:
 		   theaterChase(strip.Color(0, 0, 127), time_delay);    // Blue
 		   break;
-		   case 4:
-		   rainbow(time_delay);
-		   break;
-		   case 5:
-		   rainbowCycle(time_delay);
-		   break;
 		   case 6:
 		   theaterChaseRainbow(time_delay);
 		   break;
@@ -129,21 +105,6 @@ void loop()
 		   }
 
 		 */
-	}
-}
-
-// Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait)
-{
-	for (uint16_t i = 0; i < strip.numPixels(); i++) {
-		strip.setPixelColor(i, c);
-		strip.show();
-		button_m.Update();
-		button_e.Update();
-		if (button_m.depressed) {
-			break;
-		}
-		delay(wait);
 	}
 }
 
@@ -215,6 +176,7 @@ void rainbow_NB(uint8_t wait)
 			last_run = millis();
 		}
 	}
+
 	if ((button_e.clicks == 1)) {
 		if ((255 - wait_local) >= 5) {
 			wait_local += 5;
@@ -277,6 +239,25 @@ void rainbowCycle_NB(uint8_t wait)
 		} else {
 			wait_local = 0;
 		}
+	}
+}
+
+//
+// These still need to be rewritten to non-blocking mode
+//
+
+// Fill the dots one after the other with a color
+void colorWipe(uint32_t c, uint8_t wait)
+{
+	for (uint16_t i = 0; i < strip.numPixels(); i++) {
+		strip.setPixelColor(i, c);
+		strip.show();
+		button_m.Update();
+		button_e.Update();
+		if (button_m.depressed) {
+			break;
+		}
+		delay(wait);
 	}
 }
 
