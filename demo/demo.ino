@@ -52,7 +52,7 @@ void loop()
 	}
 
 	if (clicks == 2) {
-		mode = (mode + 1) % 3;
+		mode = (mode + 1) % 4;
 		digitalWrite(13, !digitalRead(13));
 		clicks = 0;
 	}
@@ -62,9 +62,12 @@ void loop()
 		white_NB(20);
 		break;
 	case 1:
-		rainbow_NB(10);
+		ring_hv(45, 1);
 		break;
 	case 2:
+		rainbow_NB(10);
+		break;
+	case 3:
 		rainbowCycle_NB(10);
 		break;
 	default:
@@ -96,6 +99,59 @@ void loop()
 	   }
 
 	 */
+}
+
+void ring_hv(uint16_t hue, uint8_t val)
+{
+	uint16_t i;
+	static uint8_t val_local = 0;
+	static uint16_t hue_local = 0;
+	static uint32_t last_run = 0;
+	uint32_t time_now = millis();
+	uint8_t tmp_array[3];
+
+	if (last_run == 0) {
+		hue_local = hue;
+		val_local = val;
+	}
+
+	if ((time_now - last_run) > 20) {
+
+		if (button_e.depressed) {
+			val_local++;
+		}
+
+		if (button_m.depressed) {
+			hue_local++;
+		}
+
+		hsv_to_rgb(hue_local, 255, val_local, tmp_array);
+
+		for (i = 0; i < strip.numPixels(); i++) {
+			strip.setPixelColor(i, tmp_array[0], tmp_array[1],
+					    tmp_array[2]);
+		}
+
+		strip.show();
+		last_run = millis();
+	}
+}
+
+void set_ring_hsv(uint16_t hue, uint8_t sat, uint8_t val)
+{
+	uint8_t i;
+	uint8_t tmp_array[3];
+	hsv_to_rgb(hue, sat, val, tmp_array);
+
+	uint8_t red = tmp_array[0];
+	uint8_t green = tmp_array[1];
+	uint8_t blue = tmp_array[2];
+
+	for (i = 0; i < strip.numPixels(); i++) {
+		strip.setPixelColor(i, red, green, blue);
+	}
+
+	strip.show();
 }
 
 void white_NB(uint8_t wait)
@@ -230,6 +286,71 @@ void rainbowCycle_NB(uint8_t wait)
 			wait_local = 0;
 		}
 	}
+}
+
+void hsv_to_rgb(uint16_t hue, uint8_t sat, uint8_t val, uint8_t * tmp_array)
+{
+	/* BETA */
+
+	/* finally thrown out all of the float stuff and replaced with uint16_t
+	 *
+	 * hue: 0-->360 (hue, color)
+	 * sat: 0-->255 (saturation)
+	 * val: 0-->255 (value, brightness)
+	 *
+	 */
+
+	hue = hue % 360;
+	uint8_t sector = hue / 60;
+	uint8_t rel_pos = hue - (sector * 60);
+	uint16_t const mmd = 65025;	// 255 * 255 /* maximum modulation depth */
+	uint16_t top = val * 255;
+	uint16_t bottom = val * (255 - sat);	/* (val*255) - (val*255)*(sat/255) */
+	uint16_t slope = (uint16_t) (val) * (uint16_t) (sat) / 120;	/* dy/dx = (top-bottom)/(2*60) -- val*sat: modulation_depth dy */
+	uint16_t a = bottom + slope * rel_pos;
+	uint16_t b =
+	    bottom + (uint16_t) (val) * (uint16_t) (sat) / 2 + slope * rel_pos;
+	uint16_t c = top - slope * rel_pos;
+	uint16_t d =
+	    top - (uint16_t) (val) * (uint16_t) (sat) / 2 - slope * rel_pos;
+
+	uint16_t R, G, B;
+
+	if (sector == 0) {
+		R = c;
+		G = a;
+		B = bottom;
+	} else if (sector == 1) {
+		R = d;
+		G = b;
+		B = bottom;
+	} else if (sector == 2) {
+		R = bottom;
+		G = c;
+		B = a;
+	} else if (sector == 3) {
+		R = bottom;
+		G = d;
+		B = b;
+	} else if (sector == 4) {
+		R = a;
+		G = bottom;
+		B = c;
+	} else {
+		R = b;
+		G = bottom;
+		B = d;
+	}
+
+	uint16_t scale_factor = mmd / 255;
+
+	R = (uint8_t) (R / scale_factor);
+	G = (uint8_t) (G / scale_factor);
+	B = (uint8_t) (B / scale_factor);
+
+	tmp_array[0] = R;
+	tmp_array[1] = G;
+	tmp_array[2] = B;
 }
 
 //
