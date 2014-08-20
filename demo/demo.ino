@@ -54,7 +54,7 @@ void loop()
 	}
 
 	if (clicks == 2) {
-		mode = (mode + 1) % 4;
+		mode = (mode + 1) % 5;
 		digitalWrite(13, !digitalRead(13));
 		clicks = 0;
 	}
@@ -64,12 +64,15 @@ void loop()
 		white_NB(20);
 		break;
 	case 1:
-		ring_hv(45);
+		ring_hv_NB(45);
 		break;
 	case 2:
-		rainbow_NB(10);
+		ring_cycle_hv_NB();
 		break;
 	case 3:
+		rainbow_NB(10);
+		break;
+	case 4:
 		rainbowCycle_NB(10);
 		break;
 	default:
@@ -103,7 +106,7 @@ void loop()
 	 */
 }
 
-void ring_hv(uint16_t hue)
+void ring_hv_NB(uint16_t hue)
 {
 	uint16_t i;
 	static uint16_t hue_local = 0;
@@ -130,6 +133,51 @@ void ring_hv(uint16_t hue)
 
 		strip.show();
 		last_run = millis();
+	}
+}
+
+void ring_cycle_hv_NB(void)
+{
+	uint16_t i;
+	static uint16_t hue_local = 0;
+	static uint32_t last_run = 0;
+	static uint8_t wait_local = 0;
+        uint32_t time_now = millis();
+	uint8_t tmp_array[3];
+
+	if (last_run == 0) {
+		hue_local = 0; // start with RED
+                wait_local = 20;
+	}
+
+	if ((time_now - last_run) > wait_local) {
+
+                hue_local++;
+        	hsv_to_rgb(hue_local, 255, HSV_value_global, tmp_array);
+
+		for (i = 0; i < strip.numPixels(); i++) {
+			strip.setPixelColor(i, tmp_array[0], tmp_array[1],
+					    tmp_array[2]);
+		}
+
+		strip.show();
+		last_run = millis();
+	}
+
+	if ((button_e.clicks == 1)) {
+		if ((255 - wait_local) >= 5) {
+			wait_local += 5;
+		} else {
+			wait_local = 255;
+		}
+	}
+
+	if ((button_m.clicks == 1)) {
+		if ((wait_local - 0) >= 5) {
+			wait_local -= 5;
+		} else {
+			wait_local = 0;
+		}
 	}
 }
 
