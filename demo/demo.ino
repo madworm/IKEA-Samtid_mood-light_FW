@@ -42,70 +42,60 @@ void setup()
 void loop()
 {
 	static uint8_t mode = 0;
-	uint16_t time_delay = 50;
-	int8_t clicks = 0;
+	int8_t clicks;
 
 	button_m.Update();
 	button_e.Update();
-	delay(50);
-	button_m.Update();
-	button_e.Update();
 
-	while (1) {
-
-		button_m.Update();
-		button_e.Update();
-
-		if (button_m.clicks != 0) {
-			clicks = button_m.clicks;
-		}
-
-		if (clicks == 2) {
-			mode = (mode + 1) % 3;
-			digitalWrite(13, !digitalRead(13));
-			clicks = 0;
-		}
-
-		switch (mode) {
-		case 0:
-			white_NB(20);
-			break;
-		case 1:
-			rainbow_NB(10);
-			break;
-		case 2:
-			rainbowCycle_NB(10);
-			break;
-		default:
-			break;
-		}
-
-		/*
-
-		   switch (mode) {
-		   case 0:
-		   colorWipe(strip.Color(255, 0, 0), time_delay);       // Red
-		   colorWipe(strip.Color(0, 255, 0), time_delay);       // Green
-		   colorWipe(strip.Color(0, 0, 255), time_delay);       // Blue
-		   break;
-		   case 1:
-		   theaterChase(strip.Color(127, 127, 127), time_delay);        // White
-		   break;
-		   case 2:
-		   theaterChase(strip.Color(127, 0, 0), time_delay);    // Red
-		   break;
-		   case 3:
-		   theaterChase(strip.Color(0, 0, 127), time_delay);    // Blue
-		   break;
-		   case 6:
-		   theaterChaseRainbow(time_delay);
-		   break;
-		   default:
-		   break;
-		   }
-
-		 */
+	if (button_m.clicks != 0) {
+		clicks = button_m.clicks;
 	}
+
+	if (clicks == 2) {
+		mode = (mode + 1) % 3;
+		digitalWrite(13, !digitalRead(13));
+		clicks = 0;
+	}
+
+	switch (mode) {
+	case 0:
+		white_NB(20);
+		break;
+	case 1:
+		rainbow_NB(10);
+		break;
+	case 2:
+		rainbowCycle_NB(10);
+		break;
+	default:
+		break;
+	}
+
+	/*
+
+	   switch (mode) {
+	   case 0:
+	   colorWipe(strip.Color(255, 0, 0), time_delay);       // Red
+	   colorWipe(strip.Color(0, 255, 0), time_delay);       // Green
+	   colorWipe(strip.Color(0, 0, 255), time_delay);       // Blue
+	   break;
+	   case 1:
+	   theaterChase(strip.Color(127, 127, 127), time_delay);        // White
+	   break;
+	   case 2:
+	   theaterChase(strip.Color(127, 0, 0), time_delay);    // Red
+	   break;
+	   case 3:
+	   theaterChase(strip.Color(0, 0, 127), time_delay);    // Blue
+	   break;
+	   case 6:
+	   theaterChaseRainbow(time_delay);
+	   break;
+	   default:
+	   break;
+	   }
+
+	 */
 }
 
 void white_NB(uint8_t wait)
