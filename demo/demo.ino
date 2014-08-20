@@ -86,7 +86,7 @@ void loop()
 
 		switch (mode) {
 		case 0:
-			black_to_white_NB(50);
+			black_to_white_NB(20);
 			break;
 		case 1:
 			rainbow_NB(10);
@@ -156,24 +156,40 @@ void colorWipe(uint32_t c, uint8_t wait)
 void black_to_white_NB(uint8_t wait)
 {
 	uint16_t i;
+	static uint8_t run_once = 0;
 	static uint16_t c = 0;
 	static uint32_t last_run = 0;
 	uint32_t time_now = millis();
 
-	if ((c < 256) && ((time_now - last_run) > wait)) {
+	if (run_once == 0) {
 
-		for (i = 0; i < strip.numPixels(); i++) {
-			strip.setPixelColor(i, c, c, c);
+		if ((c < 255) && ((time_now - last_run) > wait)) {
+			c++;
+			if (c == 255) {
+				run_once = 1;
+			}
+			last_run = millis();
 		}
-		strip.show();
+	} else {
 
-		c++;
-		if (c == 256) {
-			c = 255;	// only fade in ONCE
+		if (button_e.depressed && (button_e.clicks == 0) && (c < 255)
+		    && ((time_now - last_run) > wait)) {
+			c++;
+			last_run = millis();
 		}
-		last_run = millis();
+
+		if (button_m.depressed && (button_m.clicks == 0) && (c > 0)
+		    && ((time_now - last_run) > wait)) {
+			c--;
+			last_run = millis();
+		}
 	}
 
+	for (i = 0; i < strip.numPixels(); i++) {
+		strip.setPixelColor(i, c, c, c);
+	}
+
+	strip.show();
 }
 
 void rainbow_NB(uint8_t wait)
