@@ -43,7 +43,7 @@ void loop()
 {
 	static uint8_t mode = 0;
 	uint16_t time_delay = 50;
-	int8_t clicks;
+	int8_t clicks = 0;
 
 	button_m.Update();
 	button_e.Update();
@@ -79,26 +79,20 @@ void loop()
 		}
 
 		if (clicks == 2) {
-			mode = (mode + 1) % 5;
+			mode = (mode + 1) % 3;
 			digitalWrite(13, !digitalRead(13));
 			clicks = 0;
 		}
 
 		switch (mode) {
 		case 0:
-			black_to_white_NB(20);
+			white_NB(20);
 			break;
 		case 1:
 			rainbow_NB(10);
 			break;
 		case 2:
-			rainbow_NB(250);
-			break;
-		case 3:
 			rainbowCycle_NB(10);
-			break;
-		case 4:
-			rainbowCycle_NB(250);
 			break;
 		default:
 			break;
@@ -153,7 +147,7 @@ void colorWipe(uint32_t c, uint8_t wait)
 	}
 }
 
-void black_to_white_NB(uint8_t wait)
+void white_NB(uint8_t wait)
 {
 	uint16_t i;
 	static uint8_t run_once = 0;
@@ -168,28 +162,31 @@ void black_to_white_NB(uint8_t wait)
 			if (c == 255) {
 				run_once = 1;
 			}
+
+			for (i = 0; i < strip.numPixels(); i++) {
+				strip.setPixelColor(i, c, c, c);
+			}
+
+			strip.show();
 			last_run = millis();
 		}
-	} else {
+	} else if ((time_now - last_run) > wait) {
 
-		if (button_e.depressed && (button_e.clicks == 0) && (c < 255)
-		    && ((time_now - last_run) > wait)) {
+		if (button_e.depressed && (c < 255)) {
 			c++;
-			last_run = millis();
 		}
 
-		if (button_m.depressed && (button_m.clicks == 0) && (c > 0)
-		    && ((time_now - last_run) > wait)) {
+		if (button_m.depressed && (c > 0)) {
 			c--;
-			last_run = millis();
 		}
-	}
 
-	for (i = 0; i < strip.numPixels(); i++) {
-		strip.setPixelColor(i, c, c, c);
-	}
+		for (i = 0; i < strip.numPixels(); i++) {
+			strip.setPixelColor(i, c, c, c);
+		}
 
-	strip.show();
+		strip.show();
+		last_run = millis();
+	}
 }
 
 void rainbow_NB(uint8_t wait)
@@ -198,18 +195,42 @@ void rainbow_NB(uint8_t wait)
 	static uint16_t j = 0;
 	static uint32_t last_run = 0;
 	uint32_t time_now = millis();
+	static uint8_t wait_local = 0;
 
-	if ((j < 256) && ((time_now - last_run) > wait)) {
-		for (i = 0; i < strip.numPixels(); i++) {
-			strip.setPixelColor(i, Wheel((i + j) & 255));
-		}
-		strip.show();
-		j++;
-		if (j == 256) {
-			j = 0;
-		}
-		last_run = millis();
+	if (last_run == 0) {
+		wait_local = wait;
 	}
+
+	if ((time_now - last_run) > wait_local) {
+
+		if (j < 256) {
+			for (i = 0; i < strip.numPixels(); i++) {
+				strip.setPixelColor(i, Wheel((i + j) & 255));
+			}
+			strip.show();
+			j++;
+			if (j == 256) {
+				j = 0;
+			}
+			last_run = millis();
+		}
+	}
+	if ((button_e.clicks == 1)) {
+		if ((255 - wait_local) >= 5) {
+			wait_local += 5;
+		} else {
+			wait_local = 255;
+		}
+	}
+
+	if ((button_m.clicks == 1)) {
+		if ((wait_local - 0) >= 5) {
+			wait_local -= 5;
+		} else {
+			wait_local = 0;
+		}
+	}
+
 }
 
 void rainbowCycle_NB(uint8_t wait)
@@ -218,20 +239,44 @@ void rainbowCycle_NB(uint8_t wait)
 	static uint16_t j = 0;
 	static uint32_t last_run = 0;
 	uint32_t time_now = millis();
+	static uint8_t wait_local = 0;
 
-	if ((j < 256) && ((time_now - last_run) > wait)) {
-		for (i = 0; i < strip.numPixels(); i++) {
-			strip.setPixelColor(i,
-					    Wheel(((i * 256 /
-						    strip.numPixels()) +
-						   j) & 255));
+	if (last_run == 0) {
+		wait_local = wait;
+	}
+
+	if ((time_now - last_run) > wait_local) {
+
+		if (j < 256) {
+			for (i = 0; i < strip.numPixels(); i++) {
+
+				strip.setPixelColor(i,
+						    Wheel(((i * 256 /
+							    strip.numPixels()) +
+							   j) & 255));
+			}
+			strip.show();
+			j++;
+			if (j == 256) {
+				j = 0;
+			}
+			last_run = millis();
 		}
-		strip.show();
-		j++;
-		if (j == 256) {
-			j = 0;
+	}
+	if ((button_e.clicks == 1)) {
+		if ((255 - wait_local) >= 5) {
+			wait_local += 5;
+		} else {
+			wait_local = 255;
 		}
-		last_run = millis();
+	}
+
+	if ((button_m.clicks == 1)) {
+		if ((wait_local - 0) >= 5) {
+			wait_local -= 5;
+		} else {
+			wait_local = 0;
+		}
 	}
 }
 
