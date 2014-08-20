@@ -26,6 +26,8 @@ ClickButton button_e(E_BUTTON, LOW, CLICKBTN_PULLUP);
 // and minimize distance between Arduino and first pixel.  Avoid connecting
 // on a live circuit...if you must, connect GND first.
 
+uint8_t HSV_value_global; // value of HSV triplet
+
 void setup()
 {
 	button_m.debounceTime = 20;	// Debounce timer in ms
@@ -42,7 +44,7 @@ void setup()
 void loop()
 {
 	static uint8_t mode = 0;
-	int8_t clicks;
+	int8_t clicks = 0;
 
 	button_m.Update();
 	button_e.Update();
@@ -62,7 +64,7 @@ void loop()
 		white_NB(20);
 		break;
 	case 1:
-		ring_hv(45, 1);
+		ring_hv(45);
 		break;
 	case 2:
 		rainbow_NB(10);
@@ -101,10 +103,9 @@ void loop()
 	 */
 }
 
-void ring_hv(uint16_t hue, uint8_t val)
+void ring_hv(uint16_t hue)
 {
 	uint16_t i;
-	static uint8_t val_local = 0;
 	static uint16_t hue_local = 0;
 	static uint32_t last_run = 0;
 	uint32_t time_now = millis();
@@ -112,20 +113,15 @@ void ring_hv(uint16_t hue, uint8_t val)
 
 	if (last_run == 0) {
 		hue_local = hue;
-		val_local = val;
 	}
 
 	if ((time_now - last_run) > 20) {
 
 		if (button_e.depressed) {
-			val_local++;
-		}
-
-		if (button_m.depressed) {
 			hue_local++;
 		}
 
-		hsv_to_rgb(hue_local, 255, val_local, tmp_array);
+		hsv_to_rgb(hue_local, 255, HSV_value_global, tmp_array);
 
 		for (i = 0; i < strip.numPixels(); i++) {
 			strip.setPixelColor(i, tmp_array[0], tmp_array[1],
@@ -166,6 +162,7 @@ void white_NB(uint8_t wait)
 
 		if ((c < 255) && ((time_now - last_run) > wait)) {
 			c++;
+			HSV_value_global = c;
 			if (c == 255) {
 				run_once = 1;
 			}
@@ -181,10 +178,12 @@ void white_NB(uint8_t wait)
 
 		if (button_e.depressed && (c < 255)) {
 			c++;
+			HSV_value_global = c;
 		}
 
 		if (button_m.depressed && (c > 0)) {
 			c--;
+			HSV_value_global = c;
 		}
 
 		for (i = 0; i < strip.numPixels(); i++) {
