@@ -26,7 +26,7 @@ ClickButton button_e(E_BUTTON, LOW, CLICKBTN_PULLUP);
 // and minimize distance between Arduino and first pixel.  Avoid connecting
 // on a live circuit...if you must, connect GND first.
 
-uint8_t HSV_value_global; // value of HSV triplet
+uint8_t HSV_value_global;	// value of HSV triplet
 
 void setup()
 {
@@ -44,19 +44,22 @@ void setup()
 void loop()
 {
 	static uint8_t mode = 0;
-	int8_t clicks = 0;
+	static int8_t clicks = 0;
+
+	//testing();
 
 	button_m.Update();
 	button_e.Update();
 
 	if (button_m.clicks != 0) {
 		clicks = button_m.clicks;
+		//flash_LED();
 	}
 
 	if (clicks == 2) {
 		mode = (mode + 1) % 5;
-		digitalWrite(13, !digitalRead(13));
 		clicks = 0;
+		flash_LED();
 	}
 
 	switch (mode) {
@@ -106,11 +109,43 @@ void loop()
 	 */
 }
 
+void flash_LED(void)
+{
+	digitalWrite(13, HIGH);
+	delay(10);
+	digitalWrite(13, LOW);
+}
+
+void testing(void)
+{
+	int8_t clicks = 0;
+	static uint8_t mode = 0;
+	while (1) {
+
+		button_m.Update();
+		button_e.Update();
+
+		if (button_m.clicks != 0) {
+			clicks = button_m.clicks;
+			//flash_LED();
+		}
+
+		if (button_m.clicks == -1) {
+			mode = (mode + 1) % 5;
+			digitalWrite(13, !digitalRead(13));
+			clicks = 0;
+			flash_LED();
+		}
+
+	}
+}
+
 void ring_hv_NB(uint16_t hue)
 {
 	uint16_t i;
 	static uint16_t hue_local = 0;
 	static uint32_t last_run = 0;
+	static uint8_t button_e_long_press_detected = 0;
 	uint32_t time_now = millis();
 	uint8_t tmp_array[3];
 
@@ -118,10 +153,18 @@ void ring_hv_NB(uint16_t hue)
 		hue_local = hue;
 	}
 
+	if (button_e.clicks == -1) {
+		button_e_long_press_detected = 1;
+		flash_LED();
+	}
+
 	if ((time_now - last_run) > 20) {
 
-		if (button_e.depressed) {
+		if (button_e.depressed && button_e_long_press_detected == 1) {
 			hue_local++;
+			flash_LED();
+		} else {
+			button_e_long_press_detected = 0;
 		}
 
 		hsv_to_rgb(hue_local, 255, HSV_value_global, tmp_array);
@@ -142,18 +185,36 @@ void ring_cycle_hv_NB(void)
 	static uint16_t hue_local = 0;
 	static uint32_t last_run = 0;
 	static uint8_t wait_local = 0;
-        uint32_t time_now = millis();
+	uint32_t time_now = millis();
 	uint8_t tmp_array[3];
 
 	if (last_run == 0) {
-		hue_local = 0; // start with RED
-                wait_local = 20;
+		hue_local = 0;	// start with RED
+		wait_local = 20;
+	}
+
+	if (button_e.clicks == 1) {
+		if ((255 - wait_local) >= 5) {
+			wait_local += 5;
+		} else {
+			wait_local = 255;
+		}
+		flash_LED();
+	}
+
+	if (button_m.clicks == 1) {
+		if ((wait_local - 0) >= 5) {
+			wait_local -= 5;
+		} else {
+			wait_local = 0;
+		}
+		flash_LED();
 	}
 
 	if ((time_now - last_run) > wait_local) {
 
-                hue_local++;
-        	hsv_to_rgb(hue_local, 255, HSV_value_global, tmp_array);
+		hue_local++;
+		hsv_to_rgb(hue_local, 255, HSV_value_global, tmp_array);
 
 		for (i = 0; i < strip.numPixels(); i++) {
 			strip.setPixelColor(i, tmp_array[0], tmp_array[1],
@@ -162,22 +223,6 @@ void ring_cycle_hv_NB(void)
 
 		strip.show();
 		last_run = millis();
-	}
-
-	if ((button_e.clicks == 1)) {
-		if ((255 - wait_local) >= 5) {
-			wait_local += 5;
-		} else {
-			wait_local = 255;
-		}
-	}
-
-	if ((button_m.clicks == 1)) {
-		if ((wait_local - 0) >= 5) {
-			wait_local -= 5;
-		} else {
-			wait_local = 0;
-		}
 	}
 }
 
@@ -204,7 +249,19 @@ void white_NB(uint8_t wait)
 	static uint8_t run_once = 0;
 	static uint16_t c = 0;
 	static uint32_t last_run = 0;
+	static uint8_t button_e_long_press_detected = 0;
+	static uint8_t button_m_long_press_detected = 0;
 	uint32_t time_now = millis();
+
+	if (button_e.clicks == -1) {
+		button_e_long_press_detected = 1;
+		flash_LED();
+	}
+
+	if (button_m.clicks == -1) {
+		button_m_long_press_detected = 1;
+		flash_LED();
+	}
 
 	if (run_once == 0) {
 
@@ -224,14 +281,22 @@ void white_NB(uint8_t wait)
 		}
 	} else if ((time_now - last_run) > wait) {
 
-		if (button_e.depressed && (c < 255)) {
+		if (button_e.depressed && button_e_long_press_detected
+		    && (c < 255)) {
 			c++;
 			HSV_value_global = c;
+			flash_LED();
+		} else {
+			button_e_long_press_detected = 0;
 		}
 
-		if (button_m.depressed && (c > 0)) {
+		if (button_m.depressed && button_m_long_press_detected
+		    && (c > 0)) {
 			c--;
 			HSV_value_global = c;
+			flash_LED();
+		} else {
+			button_m_long_press_detected = 0;
 		}
 
 		for (i = 0; i < strip.numPixels(); i++) {
@@ -255,6 +320,24 @@ void rainbow_NB(uint8_t wait)
 		wait_local = wait;
 	}
 
+	if ((button_e.clicks == 1)) {
+		if ((255 - wait_local) >= 5) {
+			wait_local += 5;
+		} else {
+			wait_local = 255;
+		}
+		flash_LED();
+	}
+
+	if ((button_m.clicks == 1)) {
+		if ((wait_local - 0) >= 5) {
+			wait_local -= 5;
+		} else {
+			wait_local = 0;
+		}
+		flash_LED();
+	}
+
 	if ((time_now - last_run) > wait_local) {
 
 		if (j < 256) {
@@ -269,23 +352,6 @@ void rainbow_NB(uint8_t wait)
 			last_run = millis();
 		}
 	}
-
-	if ((button_e.clicks == 1)) {
-		if ((255 - wait_local) >= 5) {
-			wait_local += 5;
-		} else {
-			wait_local = 255;
-		}
-	}
-
-	if ((button_m.clicks == 1)) {
-		if ((wait_local - 0) >= 5) {
-			wait_local -= 5;
-		} else {
-			wait_local = 0;
-		}
-	}
-
 }
 
 void rainbowCycle_NB(uint8_t wait)
@@ -298,6 +364,24 @@ void rainbowCycle_NB(uint8_t wait)
 
 	if (last_run == 0) {
 		wait_local = wait;
+	}
+
+	if ((button_e.clicks == 1)) {
+		if ((255 - wait_local) >= 5) {
+			wait_local += 5;
+		} else {
+			wait_local = 255;
+		}
+		flash_LED();
+	}
+
+	if ((button_m.clicks == 1)) {
+		if ((wait_local - 0) >= 5) {
+			wait_local -= 5;
+		} else {
+			wait_local = 0;
+		}
+		flash_LED();
 	}
 
 	if ((time_now - last_run) > wait_local) {
@@ -316,21 +400,6 @@ void rainbowCycle_NB(uint8_t wait)
 				j = 0;
 			}
 			last_run = millis();
-		}
-	}
-	if ((button_e.clicks == 1)) {
-		if ((255 - wait_local) >= 5) {
-			wait_local += 5;
-		} else {
-			wait_local = 255;
-		}
-	}
-
-	if ((button_m.clicks == 1)) {
-		if ((wait_local - 0) >= 5) {
-			wait_local -= 5;
-		} else {
-			wait_local = 0;
 		}
 	}
 }
