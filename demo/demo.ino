@@ -57,7 +57,7 @@ void loop()
 	}
 
 	if (clicks == 2) {
-		mode = (mode + 1) % 5;
+		mode = (mode + 1) % 8;
 		clicks = 0;
 		flash_LED();
 	}
@@ -67,15 +67,24 @@ void loop()
 		white_NB(20);
 		break;
 	case 1:
-		ring_hv_NB(45);
+		white_bottom_NB(20);
 		break;
 	case 2:
-		ring_cycle_hv_NB();
+		white_top_NB(20);
 		break;
 	case 3:
-		rainbow_NB(10);
+		ring_hv_NB(45);
 		break;
 	case 4:
+		ring_split_hv_NB(45);
+		break;
+	case 5:
+		ring_cycle_hv_NB();
+		break;
+	case 6:
+		rainbow_NB(10);
+		break;
+	case 7:
 		rainbowCycle_NB(10);
 		break;
 	default:
@@ -179,6 +188,67 @@ void ring_hv_NB(uint16_t hue)
 	}
 }
 
+void ring_split_hv_NB(uint16_t hue)
+{
+	uint16_t i;
+	static uint16_t hue_top_local = 0;
+	static uint16_t hue_bottom_local = 0;
+	static uint32_t last_run = 0;
+	static uint8_t button_e_long_press_detected = 0;
+	static uint8_t button_m_long_press_detected = 0;
+	uint32_t time_now = millis();
+	uint8_t tmp_array[3];
+
+	if (last_run == 0) {
+		hue_top_local = hue;
+		hue_bottom_local = hue + 180;
+	}
+
+	if (button_e.clicks == -1) {
+		button_e_long_press_detected = 1;
+		flash_LED();
+	}
+
+	if (button_m.clicks == -1) {
+		button_m_long_press_detected = 1;
+		flash_LED();
+	}
+
+	if ((time_now - last_run) > 20) {
+
+		if (button_e.depressed && button_e_long_press_detected == 1) {
+			hue_top_local++;
+			flash_LED();
+		} else {
+			button_e_long_press_detected = 0;
+		}
+
+		if (button_m.depressed && button_m_long_press_detected == 1) {
+			hue_bottom_local++;
+			flash_LED();
+		} else {
+			button_m_long_press_detected = 0;
+		}
+
+		hsv_to_rgb(hue_bottom_local, 255, HSV_value_global, tmp_array);
+
+		for (i = 0; i < (strip.numPixels() / 2); i++) {
+			strip.setPixelColor(i, tmp_array[0], tmp_array[1],
+					    tmp_array[2]);
+		}
+
+		hsv_to_rgb(hue_top_local, 255, HSV_value_global, tmp_array);
+
+		for (i = (strip.numPixels() / 2); i < strip.numPixels(); i++) {
+			strip.setPixelColor(i, tmp_array[0], tmp_array[1],
+					    tmp_array[2]);
+		}
+
+		strip.show();
+		last_run = millis();
+	}
+}
+
 void ring_cycle_hv_NB(void)
 {
 	uint16_t i;
@@ -247,7 +317,7 @@ void white_NB(uint8_t wait)
 {
 	uint16_t i;
 	static uint8_t run_once = 0;
-	static uint16_t c = 0;
+	static uint8_t c = 0;
 	static uint32_t last_run = 0;
 	static uint8_t button_e_long_press_detected = 0;
 	static uint8_t button_m_long_press_detected = 0;
@@ -268,6 +338,7 @@ void white_NB(uint8_t wait)
 		if ((c < 255) && ((time_now - last_run) > wait)) {
 			c++;
 			HSV_value_global = c;
+
 			if (c == 255) {
 				run_once = 1;
 			}
@@ -301,6 +372,110 @@ void white_NB(uint8_t wait)
 
 		for (i = 0; i < strip.numPixels(); i++) {
 			strip.setPixelColor(i, c, c, c);
+		}
+
+		strip.show();
+		last_run = millis();
+	}
+}
+
+void white_top_NB(uint8_t wait)
+{
+	uint16_t i;
+	uint8_t c = HSV_value_global;
+	static uint32_t last_run = 0;
+	static uint8_t button_e_long_press_detected = 0;
+	static uint8_t button_m_long_press_detected = 0;
+	uint32_t time_now = millis();
+
+	if (button_e.clicks == -1) {
+		button_e_long_press_detected = 1;
+		flash_LED();
+	}
+
+	if (button_m.clicks == -1) {
+		button_m_long_press_detected = 1;
+		flash_LED();
+	}
+
+	if ((time_now - last_run) > wait) {
+
+		if (button_e.depressed && button_e_long_press_detected
+		    && (c < 255)) {
+			c++;
+			HSV_value_global = c;
+			flash_LED();
+		} else {
+			button_e_long_press_detected = 0;
+		}
+
+		if (button_m.depressed && button_m_long_press_detected
+		    && (c > 0)) {
+			c--;
+			HSV_value_global = c;
+			flash_LED();
+		} else {
+			button_m_long_press_detected = 0;
+		}
+
+		for (i = 0; i < (strip.numPixels() / 2); i++) {
+			strip.setPixelColor(i, 0, 0, 0);
+		}
+
+		for (i = (strip.numPixels() / 2); i < strip.numPixels(); i++) {
+			strip.setPixelColor(i, c, c, c);
+		}
+
+		strip.show();
+		last_run = millis();
+	}
+}
+
+void white_bottom_NB(uint8_t wait)
+{
+	uint16_t i;
+	uint8_t c = HSV_value_global;
+	static uint32_t last_run = 0;
+	static uint8_t button_e_long_press_detected = 0;
+	static uint8_t button_m_long_press_detected = 0;
+	uint32_t time_now = millis();
+
+	if (button_e.clicks == -1) {
+		button_e_long_press_detected = 1;
+		flash_LED();
+	}
+
+	if (button_m.clicks == -1) {
+		button_m_long_press_detected = 1;
+		flash_LED();
+	}
+
+	if ((time_now - last_run) > wait) {
+
+		if (button_e.depressed && button_e_long_press_detected
+		    && (c < 255)) {
+			c++;
+			HSV_value_global = c;
+			flash_LED();
+		} else {
+			button_e_long_press_detected = 0;
+		}
+
+		if (button_m.depressed && button_m_long_press_detected
+		    && (c > 0)) {
+			c--;
+			HSV_value_global = c;
+			flash_LED();
+		} else {
+			button_m_long_press_detected = 0;
+		}
+
+		for (i = 0; i < (strip.numPixels() / 2); i++) {
+			strip.setPixelColor(i, c, c, c);
+		}
+
+		for (i = (strip.numPixels() / 2); i < strip.numPixels(); i++) {
+			strip.setPixelColor(i, 0, 0, 0);
 		}
 
 		strip.show();
