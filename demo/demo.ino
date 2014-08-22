@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <Adafruit_NeoPixel.h>
 #include <ClickButton.h>
+#include "demo.h"
 
 #define PIN 1			// adapted to IKEA-Samtid_mood-light hardware
 #define LEDS 64			// adjust to number of installed WS2812B [1-64]
@@ -64,58 +65,32 @@ void loop()
 
 	switch (mode) {
 	case 0:
-		white_NB(20);
+		white_NB(20, ALL);	// delay (0-255), ALL, TOP, BOTTOM
 		break;
 	case 1:
-		white_bottom_NB(20);
+		white_NB(20, TOP);
 		break;
 	case 2:
-		white_top_NB(20);
+		white_NB(20, BOTTOM);
 		break;
 	case 3:
-		ring_hv_NB(45);
+		ring_hv_NB(45);	// initial hue (0-360)
 		break;
 	case 4:
-		ring_split_hv_NB(45);
+		ring_split_hv_NB(45);	// initial hue (0-360)
 		break;
 	case 5:
 		ring_cycle_hv_NB();
 		break;
 	case 6:
-		rainbow_NB(10);
+		rainbow_NB(10);	// delay (0-255)
 		break;
 	case 7:
-		rainbowCycle_NB(10);
+		rainbowCycle_NB(10);	// delay (0-255)
 		break;
 	default:
 		break;
 	}
-
-	/*
-
-	   switch (mode) {
-	   case 0:
-	   colorWipe(strip.Color(255, 0, 0), time_delay);       // Red
-	   colorWipe(strip.Color(0, 255, 0), time_delay);       // Green
-	   colorWipe(strip.Color(0, 0, 255), time_delay);       // Blue
-	   break;
-	   case 1:
-	   theaterChase(strip.Color(127, 127, 127), time_delay);        // White
-	   break;
-	   case 2:
-	   theaterChase(strip.Color(127, 0, 0), time_delay);    // Red
-	   break;
-	   case 3:
-	   theaterChase(strip.Color(0, 0, 127), time_delay);    // Blue
-	   break;
-	   case 6:
-	   theaterChaseRainbow(time_delay);
-	   break;
-	   default:
-	   break;
-	   }
-
-	 */
 }
 
 void flash_LED(void)
@@ -313,7 +288,7 @@ void set_ring_hsv(uint16_t hue, uint8_t sat, uint8_t val)
 	strip.show();
 }
 
-void white_NB(uint8_t wait)
+void white_NB(uint8_t wait, which_side_t side)
 {
 	uint16_t i;
 	static uint8_t run_once = 0;
@@ -370,112 +345,32 @@ void white_NB(uint8_t wait)
 			button_m_long_press_detected = 0;
 		}
 
-		for (i = 0; i < strip.numPixels(); i++) {
-			strip.setPixelColor(i, c, c, c);
-		}
-
-		strip.show();
-		last_run = millis();
-	}
-}
-
-void white_top_NB(uint8_t wait)
-{
-	uint16_t i;
-	uint8_t c = HSV_value_global;
-	static uint32_t last_run = 0;
-	static uint8_t button_e_long_press_detected = 0;
-	static uint8_t button_m_long_press_detected = 0;
-	uint32_t time_now = millis();
-
-	if (button_e.clicks == -1) {
-		button_e_long_press_detected = 1;
-		flash_LED();
-	}
-
-	if (button_m.clicks == -1) {
-		button_m_long_press_detected = 1;
-		flash_LED();
-	}
-
-	if ((time_now - last_run) > wait) {
-
-		if (button_e.depressed && button_e_long_press_detected
-		    && (c < 255)) {
-			c++;
-			HSV_value_global = c;
-			flash_LED();
-		} else {
-			button_e_long_press_detected = 0;
-		}
-
-		if (button_m.depressed && button_m_long_press_detected
-		    && (c > 0)) {
-			c--;
-			HSV_value_global = c;
-			flash_LED();
-		} else {
-			button_m_long_press_detected = 0;
-		}
-
-		for (i = 0; i < (strip.numPixels() / 2); i++) {
-			strip.setPixelColor(i, 0, 0, 0);
-		}
-
-		for (i = (strip.numPixels() / 2); i < strip.numPixels(); i++) {
-			strip.setPixelColor(i, c, c, c);
-		}
-
-		strip.show();
-		last_run = millis();
-	}
-}
-
-void white_bottom_NB(uint8_t wait)
-{
-	uint16_t i;
-	uint8_t c = HSV_value_global;
-	static uint32_t last_run = 0;
-	static uint8_t button_e_long_press_detected = 0;
-	static uint8_t button_m_long_press_detected = 0;
-	uint32_t time_now = millis();
-
-	if (button_e.clicks == -1) {
-		button_e_long_press_detected = 1;
-		flash_LED();
-	}
-
-	if (button_m.clicks == -1) {
-		button_m_long_press_detected = 1;
-		flash_LED();
-	}
-
-	if ((time_now - last_run) > wait) {
-
-		if (button_e.depressed && button_e_long_press_detected
-		    && (c < 255)) {
-			c++;
-			HSV_value_global = c;
-			flash_LED();
-		} else {
-			button_e_long_press_detected = 0;
-		}
-
-		if (button_m.depressed && button_m_long_press_detected
-		    && (c > 0)) {
-			c--;
-			HSV_value_global = c;
-			flash_LED();
-		} else {
-			button_m_long_press_detected = 0;
-		}
-
-		for (i = 0; i < (strip.numPixels() / 2); i++) {
-			strip.setPixelColor(i, c, c, c);
-		}
-
-		for (i = (strip.numPixels() / 2); i < strip.numPixels(); i++) {
-			strip.setPixelColor(i, 0, 0, 0);
+		switch (side) {
+		case ALL:
+			for (i = 0; i < strip.numPixels(); i++) {
+				strip.setPixelColor(i, c, c, c);
+			}
+			break;
+		case TOP:
+			for (i = 0; i < (strip.numPixels() / 2); i++) {
+				strip.setPixelColor(i, 0, 0, 0);
+			}
+			for (i = (strip.numPixels() / 2); i < strip.numPixels();
+			     i++) {
+				strip.setPixelColor(i, c, c, c);
+			}
+			break;
+		case BOTTOM:
+			for (i = 0; i < (strip.numPixels() / 2); i++) {
+				strip.setPixelColor(i, c, c, c);
+			}
+			for (i = (strip.numPixels() / 2); i < strip.numPixels();
+			     i++) {
+				strip.setPixelColor(i, 0, 0, 0);
+			}
+			break;
+		default:
+			break;
 		}
 
 		strip.show();
@@ -729,3 +624,29 @@ uint32_t Wheel(byte WheelPos)
 		return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
 	}
 }
+
+	/*
+
+	   switch (mode) {
+	   case 0:
+	   colorWipe(strip.Color(255, 0, 0), time_delay);       // Red
+	   colorWipe(strip.Color(0, 255, 0), time_delay);       // Green
+	   colorWipe(strip.Color(0, 0, 255), time_delay);       // Blue
+	   break;
+	   case 1:
+	   theaterChase(strip.Color(127, 127, 127), time_delay);        // White
+	   break;
+	   case 2:
+	   theaterChase(strip.Color(127, 0, 0), time_delay);    // Red
+	   break;
+	   case 3:
+	   theaterChase(strip.Color(0, 0, 127), time_delay);    // Blue
+	   break;
+	   case 6:
+	   theaterChaseRainbow(time_delay);
+	   break;
+	   default:
+	   break;
+	   }
+
+	 */
