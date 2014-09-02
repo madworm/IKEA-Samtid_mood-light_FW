@@ -1,3 +1,16 @@
+/*
+ * IKEA-Samtid reading light upgrade firmware
+ *
+ * Modes of operation:
+ * ===================
+ *
+ * M-button: 1) double-click --> change mode
+ *           2) press & hold --> decrease / cycle left
+ *
+ * E-button: 1) press & hold --> increase / cycle right
+ *
+ */
+
 // Install: Adafruit NeoPixel library
 // Install: ClickButton library
 #include <stdint.h>
