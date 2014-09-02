@@ -4,6 +4,8 @@
  * Modes of operation:
  * ===================
  *
+ * Any valid button press will cause the on-board LED to flash
+ *
  * M-button: 1) double-click --> change mode
  *           2) press & hold --> decrease / cycle left
  *
