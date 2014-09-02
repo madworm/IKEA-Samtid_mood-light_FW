@@ -4,6 +4,11 @@ IKEA-Samtid_mood-light_FW
 
 CODE: Circular extension board for IKEA Samtid lamps.
 
+WS2812B-based Arduino compatible RGB ring light.
+
+Hardware [repository](https://github.com/madworm/IKEA-Samtid_mood-light).
+Works with Adafruit [NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel) library.
+
 
 ---
 
