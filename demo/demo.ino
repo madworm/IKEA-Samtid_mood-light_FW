@@ -6,10 +6,12 @@
  *
  * Any valid button press will cause the on-board LED to flash
  *
- * M-button: 1) double-click --> change mode
+ * M-button: 1) double-click --> change mode (works any time)
  *           2) press & hold --> decrease / cycle left
+	     3) single-click --> decrease delay
  *
  * E-button: 1) press & hold --> increase / cycle right
+ *           2) single-click --> increase delay
  *
  */
 
