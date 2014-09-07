@@ -4,15 +4,17 @@
  * Modes of operation:
  * ===================
  *
- * Any valid button press will cause the on-board LED to flash
+ * M-button: double-click –> change MODE anytime
  *
- * M-button: 1) double-click --> change mode (works any time)
- *           2) press & hold --> decrease / cycle left
-	     3) single-click --> decrease delay
+ * Depending on the current mode, the M- and E-button have additional functionality. 
+ * Every time a valid button event has been detected, the on-board LED flashes briefly.
  *
- * E-button: 1) press & hold --> increase / cycle right
- *           2) single-click --> increase delay
- *
+ * white modes: M/E press & hold: set global brightness for most effects
+ * uniform static colour: E press & hold: change colour
+ * uniform colour fader: E/M single click: change delay
+ * split colour: E/M press & hold: change colours
+ * rainbow modes: E/M single click: change delay
+ * 
  */
 
 // Install: Adafruit NeoPixel library
