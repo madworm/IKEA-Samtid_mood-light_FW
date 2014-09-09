@@ -149,6 +149,7 @@ void ring_hv_NB(uint16_t hue)
 	static uint16_t hue_local = 0;
 	static uint32_t last_run = 0;
 	static uint8_t button_e_long_press_detected = 0;
+	static uint8_t button_m_long_press_detected = 0;
 	uint32_t time_now = millis();
 	uint8_t tmp_array[3];
 
@@ -161,6 +162,11 @@ void ring_hv_NB(uint16_t hue)
 		flash_LED();
 	}
 
+	if (button_m.clicks == -1) {
+		button_m_long_press_detected = 1;
+		flash_LED();
+	}
+
 	if ((time_now - last_run) > 20) {
 
 		if (button_e.depressed && button_e_long_press_detected == 1) {
@@ -168,6 +174,13 @@ void ring_hv_NB(uint16_t hue)
 			flash_LED();
 		} else {
 			button_e_long_press_detected = 0;
+		}
+
+		if (button_m.depressed && button_m_long_press_detected == 1) {
+			hue_local--;
+			flash_LED();
+		} else {
+			button_m_long_press_detected = 0;
 		}
 
 		hsv_to_rgb(hue_local, 255, HSV_value_global, tmp_array);
