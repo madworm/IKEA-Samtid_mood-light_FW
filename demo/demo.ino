@@ -169,14 +169,16 @@ void ring_hv_NB(uint16_t hue)
 
 	if ((time_now - last_run) > 80) {
 
-		if (button_e.depressed && button_e_long_press_detected == 1) {
+		if (button_e.depressed && (button_e_long_press_detected == 1)
+		    && (hue_local < 65535)) {
 			hue_local++;
 			flash_LED();
 		} else {
 			button_e_long_press_detected = 0;
 		}
 
-		if (button_m.depressed && button_m_long_press_detected == 1) {
+		if (button_m.depressed && (button_m_long_press_detected == 1)
+		    && (hue_local > 0)) {
 			hue_local--;
 			flash_LED();
 		} else {
@@ -223,14 +225,14 @@ void ring_split_hv_NB(uint16_t hue)
 
 	if ((time_now - last_run) > 80) {
 
-		if (button_e.depressed && button_e_long_press_detected == 1) {
+		if (button_e.depressed && (button_e_long_press_detected == 1)) {
 			hue_top_local++;
 			flash_LED();
 		} else {
 			button_e_long_press_detected = 0;
 		}
 
-		if (button_m.depressed && button_m_long_press_detected == 1) {
+		if (button_m.depressed && (button_m_long_press_detected == 1)) {
 			hue_bottom_local++;
 			flash_LED();
 		} else {
@@ -289,7 +291,6 @@ void ring_cycle_hv_NB(void)
 	}
 
 	if ((time_now - last_run) > wait_local) {
-
 		hue_local++;
 		hsv_to_rgb(hue_local, 255, HSV_value_global, tmp_array);
 
