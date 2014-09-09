@@ -167,7 +167,7 @@ void ring_hv_NB(uint16_t hue)
 		flash_LED();
 	}
 
-	if ((time_now - last_run) > 20) {
+	if ((time_now - last_run) > 80) {
 
 		if (button_e.depressed && button_e_long_press_detected == 1) {
 			hue_local++;
@@ -221,7 +221,7 @@ void ring_split_hv_NB(uint16_t hue)
 		flash_LED();
 	}
 
-	if ((time_now - last_run) > 20) {
+	if ((time_now - last_run) > 80) {
 
 		if (button_e.depressed && button_e_long_press_detected == 1) {
 			hue_top_local++;
