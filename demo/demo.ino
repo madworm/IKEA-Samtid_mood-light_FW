@@ -99,13 +99,13 @@ void loop()
 		ring_split_hv_NB(45);	// initial hue (0-360)
 		break;
 	case 5:
-		ring_cycle_hv_NB();
+		ring_cycle_hv_NB(255); // initial delay (0-255)
 		break;
 	case 6:
-		rainbow_NB(10);	// delay (0-255)
+		rainbow_NB(64);	// delay (0-255)
 		break;
 	case 7:
-		rainbowCycle_NB(10);	// delay (0-255)
+		rainbowCycle_NB(64);	// delay (0-255)
 		break;
 	default:
 		break;
@@ -258,7 +258,7 @@ void ring_split_hv_NB(uint16_t hue)
 	}
 }
 
-void ring_cycle_hv_NB(void)
+void ring_cycle_hv_NB(uint8_t delay)
 {
 	uint16_t i;
 	static uint16_t hue_local = 0;
@@ -269,7 +269,7 @@ void ring_cycle_hv_NB(void)
 
 	if (last_run == 0) {
 		hue_local = 0;	// start with RED
-		wait_local = 20;
+		wait_local = delay;
 	}
 
 	if (button_e.clicks == 1) {
