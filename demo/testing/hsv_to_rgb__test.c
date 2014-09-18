@@ -8,22 +8,22 @@ void hsv_to_rgb(uint16_t heu, uint8_t sat, uint8_t val, uint8_t * tmp_array);
 
 //
 
-int main(void) {
+int main(void)
+{
 
-uint8_t tmp[3];
-uint16_t hue;
+	uint8_t tmp[3];
+	uint16_t hue;
 
-for(hue = 0; hue <=360; hue++) {
+	for (hue = 0; hue <= 360; hue++) {
 
-hsv_to_rgb(hue, 255, 255, tmp);
-printf("HUE: %d -- ", hue);
-printf("RED: %d - ", tmp[0]);
-printf("GREEN: %d - ", tmp[1]);
-printf("BLUE: %d\n", tmp[2]);
+		hsv_to_rgb(hue, 255, 255, tmp);
+		printf("HUE: %d -- ", hue);
+		printf("RED: %d - ", tmp[0]);
+		printf("GREEN: %d - ", tmp[1]);
+		printf("BLUE: %d - ", tmp[2]);
+		printf("SUM: %d\n", tmp[0] + tmp[1] + tmp[2]);
 
-
-}
-
+	}
 
 }
 
