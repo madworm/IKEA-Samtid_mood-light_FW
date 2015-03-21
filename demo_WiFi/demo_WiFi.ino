@@ -24,6 +24,8 @@ void setup(void) {
         Serial.print(ESP_STATIC_IP);
         Serial.print(F("\""));
         Serial.print(ESP_LINE_TERM);
+
+	// now you should be able to PING the board
 }
 
 void loop(void) {
