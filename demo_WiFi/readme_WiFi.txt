@@ -1,3 +1,3 @@
 
-Required hardware: ESP8266-01 WiFi module
+Required hardware: ESP8266-1 WiFi module
 
