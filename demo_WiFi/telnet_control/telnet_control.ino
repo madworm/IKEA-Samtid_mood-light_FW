@@ -10,6 +10,10 @@ void setup(void) {
 
         Serial.begin(ESP_FAST_CIBAUD); 
 	
+	// set mode
+	Serial.print(F("AT+CWMODE=3"));
+	Serial.print(ESP_LINE_TERM);
+
 	// join access point
         Serial.print(F("AT+CWJAP=\""));
 	Serial.print(ESP_SSID); 
