@@ -1,0 +1,14 @@
+#!/bin/bash
+
+// extract the serial port from command line parameters
+SERIAL=${8/#-P}
+
+// send some data to the bluetooth serial port, so it "wakes up" and resets the arduino
+echo "dummy" > $SERIAL
+
+// wait
+sleep 1 
+
+// call avrdude
+$PWD/hardware/tools/avrdude-bin $@
+
