@@ -8,7 +8,7 @@
 # Make sure to select your programmer type in the menu!
 # this makes sure the correct FUSE settings are used
 #
-IKEA-Samtid-mood-light.name=IKEA Samtid mood-light - ATmega168 / 16MHz Quartz / Optiboot [default]
+IKEA-Samtid-mood-light.name=IKEA Samtid mood-light - ATmega168P / 16MHz Quartz / Optiboot [default]
 IKEA-Samtid-mood-light.upload.protocol=arduino
 IKEA-Samtid-mood-light.upload.maximum_size=15872
 IKEA-Samtid-mood-light.upload.speed=115200
