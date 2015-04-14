@@ -1,5 +1,5 @@
-#ifndef demo_h
-#define demo_h
+#ifndef demo_old_h
+#define demo_old_h
 
 typedef enum {
 	ALL,
