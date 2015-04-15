@@ -8,7 +8,7 @@
 void setup(void) {
 	increase_ESP8266_baud_rate(); // this may only be needed once or not at all
 
-        Serial.begin(ESP_FAST_CIBAUD); 
+        Serial.begin(ESP_FAST_CIOBAUD); 
 	
 	// set mode
 	Serial.print(F("AT+CWMODE=3"));
