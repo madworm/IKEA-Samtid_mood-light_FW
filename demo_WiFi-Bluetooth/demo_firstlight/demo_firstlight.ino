@@ -25,7 +25,7 @@
 #include "demo_firstlight.h"
 
 #define PIN 5			// adapted to IKEA-Samtid_mood-light hardware
-#define LEDS 64		// adjust to number of installed WS2812B [1-64]
+#define LEDS 64			// adjust to number of installed WS2812B [1-64]
 #define M_BUTTON 12
 #define E_BUTTON 11
 #define PRESSED 0
@@ -99,7 +99,7 @@ void loop()
 		ring_split_hv_NB(45);	// initial hue (0-360)
 		break;
 	case 5:
-		ring_cycle_hv_NB(255); // initial delay (0-255)
+		ring_cycle_hv_NB(255);	// initial delay (0-255)
 		break;
 	case 6:
 		rainbow_NB(64);	// delay (0-255)
