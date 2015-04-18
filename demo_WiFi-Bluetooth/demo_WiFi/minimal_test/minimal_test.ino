@@ -1,3 +1,19 @@
+//
+// This code will:
+// 
+// * join an access point (settings below)
+// * start a server using a static IP + PORT
+// 
+// Every time data is sent to the device,
+// one LED will flip between red and green.
+//
+// Either use a webbrowser to connect to it:
+//       http://192.168.1.199:80
+// 
+// or use telnet like so:
+//       telnet -e + 192.168.1.199 80
+//
+
 #define ESP_SSID (F("<your stuff>"))
 #define ESP_PASS (F("<your stuff>"))
 #define ESP_STATIC_IP (F("192.168.1.199"))
