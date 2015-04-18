@@ -41,7 +41,7 @@ void setup(void)
 	// set mode
 	Serial.print(F("AT+CWMODE=3"));
 	Serial.print(ESP_LINE_TERM);
-	delay(50);
+	delay(50);		// this really should be replaced with "wait_for_OK()" !
 
 	// join access point
 	Serial.print(F("AT+CWJAP=\""));
@@ -101,6 +101,18 @@ void loop(void)
 			strip.show();
 		}
 	}
+}
+
+void wait_for_OK(void)
+{
+	// first attempts failed miserably
+	//
+	// need to precicely check what the ESP8266 sends back
+	// (including the \r\n stuff) --> logic analyzer
+	// terminal + hexdump gives inconsistent results [useless]
+	//
+	// either this is inherently inconsistent / unreliable or I had
+	// a pretty substantial "brain-AFK" yesterday
 }
 
 void increase_ESP8266_baud_rate(void)
