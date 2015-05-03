@@ -1,9 +1,10 @@
 
-* Append the contents of 'boards.txt.modif' to the Arduino-IDE's 'boards.txt' file.
+Arduino-IDE installation:
+=========================
 
-  You can find the file in '<Arduino-Folder>/hardware/arduino/avr/boards.txt'.
+* Copy the folder 'My_2µF_blog' to the 'hardware' folder:
 
-* Copy the bootloader hex-file to '<Arduino-Folder>/hardware/arduino/avr/bootloaders/optiboot'.
+  "./arduino-1.6.x/hardware"
 
 * Start / restart the IDE.
 

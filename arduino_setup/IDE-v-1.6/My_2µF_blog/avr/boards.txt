@@ -1,3 +1,7 @@
+#
+# https://github.com/arduino/Arduino/wiki/Arduino-Hardware-Cores-migration-guide-from-1.0-to-1.6
+# https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5---3rd-party-Hardware-specification
+#
 
 ##############################################################
 #
@@ -22,7 +26,6 @@ isml.bootloader.lock_bits=0x0F
 isml.bootloader.tool=arduino:avrdude
 isml.build.mcu=atmega168p
 isml.build.f_cpu=16000000L
-isml.build.core=arduino
-isml.build.variant=eightanaloginputs
+isml.build.core=arduino:arduino
+isml.build.variant=arduino:eightanaloginputs
 isml.build.board=AVR_ISML
-
