@@ -1,0 +1,28 @@
+
+##############################################################
+#
+# to activate this board, select it and use:
+#
+# 'Burn Bootloader' just once
+# Make sure to select your programmer type in the menu!
+# this makes sure the correct FUSE settings are used
+#
+isml.name=IKEA Samtid mood-light - ATmega168P / 16MHz Quartz / Optiboot 
+[default]
+isml.upload.protocol=arduino
+isml.upload.maximum_size=15872
+isml.upload.speed=115200
+isml.upload.tool=arduino:avrdude
+isml.bootloader.low_fuses=0xFF
+isml.bootloader.high_fuses=0xDD
+isml.bootloader.extended_fuses=0x04
+isml.bootloader.file=optiboot/optiboot_atmega168p_16MHz.hex
+isml.bootloader.unlock_bits=0x3F
+isml.bootloader.lock_bits=0x0F
+isml.bootloader.tool=arduino:avrdude
+isml.build.mcu=atmega168p
+isml.build.f_cpu=16000000L
+isml.build.core=arduino
+isml.build.variant=eightanaloginputs
+isml.build.board=AVR_ISML
+
