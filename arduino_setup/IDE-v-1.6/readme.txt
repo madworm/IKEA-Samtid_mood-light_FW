@@ -2,7 +2,7 @@
 Arduino-IDE installation:
 =========================
 
-* Copy the folder 'My_2µF_blog' to the 'hardware' folder:
+* Copy the folder 'madworm' to the 'hardware' folder:
 
   "./arduino-1.6.x/hardware"
 
