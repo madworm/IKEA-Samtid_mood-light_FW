@@ -117,7 +117,7 @@ void parseCommand(String com_str)
 			strip.setPixelColor(16, 0, 0, 0);
 			strip.show();
 			delay(100);
-  			strip.setPixelColor(16, 0, 0, 32);
+			strip.setPixelColor(16, 0, 0, 32);
 			strip.show();
 			delay(100);
 			strip.setPixelColor(16, 0, 0, 0);
@@ -185,7 +185,7 @@ void parseCommand(String com_str)
 	}
 }
 
-void wait_for(const char * text)
+void wait_for(const char *text)
 {
 	// first attempts failed miserably
 	//
@@ -207,6 +207,7 @@ void wait_for(const char * text)
 			if (c == '\n') {
 				if (temp_str.indexOf(text) != -1) {
 					clear_serial_buffer();
+					delay(100);
 					break;
 				}
 				temp_str = "";	// didn't find "OK" in this line, clear & keep on reading new data
@@ -287,11 +288,11 @@ void lamp_test(void)
 
 void init_ESP8266(void)
 {
-  	Serial.begin(ESP_SLOW_CIOBAUD);
+	Serial.begin(ESP_SLOW_CIOBAUD);
 	while (Serial.available()) {
 		uint8_t dummy = Serial.read();	// make sure input butter is empty
 	}
-  
+
 	pinMode(RESET, OUTPUT);
 	digitalWrite(RESET, LOW);
 	delay(100);
@@ -300,7 +301,7 @@ void init_ESP8266(void)
 	pinMode(ENABLE, OUTPUT);
 	digitalWrite(ENABLE, HIGH);
 
-	wait_for("ready");		// wait for ESP8266 to boot up
+	wait_for("ready");	// wait for ESP8266 to boot up
 
 	// set mode
 	Serial.print(F("AT+CWMODE=3"));
