@@ -114,21 +114,24 @@ void parseCommand(String com_str)
 		maincmd_str = com_str.substring(index_of_semicolon + 1);
 
 		if (maincmd_str == "GET /blink HTTP/1.1") {
-			strip.setPixelColor(16, 0, 0, 32);
-			strip.show();
-			delay(25);
 			strip.setPixelColor(16, 0, 0, 0);
 			strip.show();
-			delay(25);
+			delay(100);
+  			strip.setPixelColor(16, 0, 0, 32);
+			strip.show();
+			delay(100);
+			strip.setPixelColor(16, 0, 0, 0);
+			strip.show();
+			delay(100);
 
 			Serial.print(F("AT+CIPSEND="));
 			Serial.print(incoming_connection_number);
 			Serial.print(F(","));
 			Serial.print(F("22"));
 			Serial.print(ESP_LINE_TERM);
-			wait_for_OK();
+			wait_for("OK");
 			Serial.print(F("LED #16: blinked BLUE\n"));
-			wait_for_OK();
+			wait_for("OK");
 		} else if (maincmd_str == "GET /off HTTP/1.1") {
 			strip.setPixelColor(16, 0, 0, 0);
 			strip.show();
@@ -138,9 +141,9 @@ void parseCommand(String com_str)
 			Serial.print(F(","));
 			Serial.print(F("13"));
 			Serial.print(ESP_LINE_TERM);
-			wait_for_OK();
+			wait_for("OK");
 			Serial.print(F("LED #16: OFF\n"));
-			wait_for_OK();
+			wait_for("OK");
 		} else if (maincmd_str == "GET /on HTTP/1.1") {
 			strip.setPixelColor(16, 32, 32, 32);
 			strip.show();
@@ -150,18 +153,18 @@ void parseCommand(String com_str)
 			Serial.print(F(","));
 			Serial.print(F("12"));
 			Serial.print(ESP_LINE_TERM);
-			wait_for_OK();
+			wait_for("OK");
 			Serial.print(F("LED #16: ON\n"));
-			wait_for_OK();
+			wait_for("OK");
 		} else {
 			Serial.print(F("AT+CIPSEND="));
 			Serial.print(incoming_connection_number);
 			Serial.print(F(","));
 			Serial.print(F("31"));
 			Serial.print(ESP_LINE_TERM);
-			wait_for_OK();
+			wait_for("OK");
 			Serial.print(F("commands:\n\n* on\n* off\n* blink\n\n"));
-			wait_for_OK();
+			wait_for("OK");
 		}
 
 		// bye bye
@@ -170,19 +173,19 @@ void parseCommand(String com_str)
 		Serial.print(F(","));
 		Serial.print(F("9"));
 		Serial.print(ESP_LINE_TERM);
-		wait_for_OK();
+		wait_for("OK");
 		Serial.print(F("Bye Bye!\n"));
-		wait_for_OK();
+		wait_for("OK");
 
 		// close connection
 		Serial.print(F("AT+CIPCLOSE="));
 		Serial.print(5);	// close ALL connections. Just closing the current one leads to "busy p..." crap
 		Serial.print(ESP_LINE_TERM);
-		wait_for_OK();
+		wait_for("OK");
 	}
 }
 
-void wait_for_OK(void)
+void wait_for(const char * text)
 {
 	// first attempts failed miserably
 	//
@@ -202,7 +205,7 @@ void wait_for_OK(void)
 		if (Serial.available()) {
 			char c = Serial.read();
 			if (c == '\n') {
-				if (temp_str.indexOf("OK") != -1) {
+				if (temp_str.indexOf(text) != -1) {
 					clear_serial_buffer();
 					break;
 				}
@@ -284,6 +287,11 @@ void lamp_test(void)
 
 void init_ESP8266(void)
 {
+  	Serial.begin(ESP_SLOW_CIOBAUD);
+	while (Serial.available()) {
+		uint8_t dummy = Serial.read();	// make sure input butter is empty
+	}
+  
 	pinMode(RESET, OUTPUT);
 	digitalWrite(RESET, LOW);
 	delay(100);
@@ -292,20 +300,12 @@ void init_ESP8266(void)
 	pinMode(ENABLE, OUTPUT);
 	digitalWrite(ENABLE, HIGH);
 
-	delay(2000);		// wait for ESP8266 to boot up
-
-	//increase_ESP8266_baud_rate(); // this may only be needed once or not at all
-	//decrease_ESP8266_baud_rate();
-
-	Serial.begin(ESP_SLOW_CIOBAUD);
-	while (Serial.available()) {
-		uint8_t dummy = Serial.read();	// make sure input butter is empty
-	}
+	wait_for("ready");		// wait for ESP8266 to boot up
 
 	// set mode
 	Serial.print(F("AT+CWMODE=3"));
 	Serial.print(ESP_LINE_TERM);
-	wait_for_OK();		// this really should be replaced with "wait_for_OK()" !
+	wait_for("OK");		// this really should be replaced with "wait_for_OK()" !
 
 	// join access point
 	Serial.print(F("AT+CWJAP=\""));
@@ -314,35 +314,35 @@ void init_ESP8266(void)
 	Serial.print(ESP_PASS);
 	Serial.print(F("\""));
 	Serial.print(ESP_LINE_TERM);
-	wait_for_OK();
+	wait_for("OK");
 
 	// set static IP address
 	Serial.print(F("AT+CIPSTA=\""));
 	Serial.print(ESP_STATIC_IP);
 	Serial.print(F("\""));
 	Serial.print(ESP_LINE_TERM);
-	wait_for_OK();
+	wait_for("OK");
 
 	// get IP address
 	Serial.print(F("AT+CIFSR"));
 	Serial.print(ESP_LINE_TERM);
-	wait_for_OK();
+	wait_for("OK");
 
 	// now you should be able to PING the board
 
 	// start SERVER
 	Serial.print(F("AT+CIPMODE=0"));
 	Serial.print(ESP_LINE_TERM);
-	wait_for_OK();
+	wait_for("OK");
 
 	Serial.print(F("AT+CIPMUX=1"));
 	Serial.print(ESP_LINE_TERM);
-	wait_for_OK();
+	wait_for("OK");
 
 	Serial.print(F("AT+CIPSERVER=1,"));
 	Serial.print(ESP_SERVER_PORT);
 	Serial.print(ESP_LINE_TERM);
-	wait_for_OK();
+	wait_for("OK");
 
 	strip.setPixelColor(0, 32, 0, 0);
 	strip.show();
