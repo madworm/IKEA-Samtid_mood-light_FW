@@ -33,74 +33,8 @@ String command_str;
 void setup(void)
 {
 	strip.begin();
-	strip.setPixelColor(0, 32, 32, 32);
-	strip.show();
-	delay(1000);
-	strip.setPixelColor(0, 0, 0, 0);
-	strip.show();
-	delay(1000);
-
-	pinMode(RESET, OUTPUT);
-	digitalWrite(RESET, HIGH);	// RESET is "active-low"
-
-	pinMode(ENABLE, OUTPUT);
-	digitalWrite(ENABLE, HIGH);
-
-	delay(2000);		// wait for ESP8266 to boot up
-
-	//increase_ESP8266_baud_rate(); // this may only be needed once or not at all
-	//decrease_ESP8266_baud_rate();
-
-	Serial.begin(ESP_SLOW_CIOBAUD);
-	while (Serial.available()) {
-		uint8_t dummy = Serial.read();	// make sure input butter is empty
-	}
-
-	// set mode
-	Serial.print(F("AT+CWMODE=3"));
-	Serial.print(ESP_LINE_TERM);
-	delay(50);		// this really should be replaced with "wait_for_OK()" !
-
-	// join access point
-	Serial.print(F("AT+CWJAP=\""));
-	Serial.print(ESP_SSID);
-	Serial.print(F("\",\""));
-	Serial.print(ESP_PASS);
-	Serial.print(F("\""));
-	Serial.print(ESP_LINE_TERM);
-	delay(5000);
-
-	// set static IP address
-	Serial.print(F("AT+CIPSTA=\""));
-	Serial.print(ESP_STATIC_IP);
-	Serial.print(F("\""));
-	Serial.print(ESP_LINE_TERM);
-	delay(50);
-
-	// get IP address
-	Serial.print(F("AT+CIFSR"));
-	Serial.print(ESP_LINE_TERM);
-	delay(50);
-
-	// now you should be able to PING the board
-
-	// start SERVER
-	Serial.print(F("AT+CIPMODE=0"));
-	Serial.print(ESP_LINE_TERM);
-	delay(50);
-
-	Serial.print(F("AT+CIPMUX=1"));
-	Serial.print(ESP_LINE_TERM);
-	delay(50);
-
-	Serial.print(F("AT+CIPSERVER=1,"));
-	Serial.print(ESP_SERVER_PORT);
-	Serial.print(ESP_LINE_TERM);
-	delay(50);
-
-	strip.setPixelColor(0, 0, 32, 0);
-	strip.show();
-	clear_serial_buffer();
+	lamp_test();
+	init_ESP8266();
 }
 
 void loop(void)
@@ -304,4 +238,98 @@ void toggle_2nd_WS(void)
 	}
 	strip.show();
 
+}
+
+void lamp_test(void)
+{
+	uint8_t LED_counter;
+	int16_t brightness;
+
+	for (brightness = 0; brightness <= 64; brightness++) {
+		for (LED_counter = 0; LED_counter <= 64; LED_counter++) {
+			strip.setPixelColor(LED_counter, brightness, brightness, brightness);
+		}
+		strip.show();
+		delay(5);
+	}
+
+	for (brightness = 64; brightness >= 0; brightness--) {
+		for (LED_counter = 0; LED_counter <= 64; LED_counter++) {
+			strip.setPixelColor(LED_counter, brightness, brightness, brightness);
+		}
+		strip.show();
+		delay(5);
+	}
+
+}
+
+void init_ESP8266(void)
+{
+	pinMode(RESET, OUTPUT);
+	digitalWrite(RESET, LOW);
+	delay(100);
+	digitalWrite(RESET, HIGH);	// RESET is "active-low"
+
+	pinMode(ENABLE, OUTPUT);
+	digitalWrite(ENABLE, HIGH);
+
+	delay(2000);		// wait for ESP8266 to boot up
+
+	//increase_ESP8266_baud_rate(); // this may only be needed once or not at all
+	//decrease_ESP8266_baud_rate();
+
+	Serial.begin(ESP_SLOW_CIOBAUD);
+	while (Serial.available()) {
+		uint8_t dummy = Serial.read();	// make sure input butter is empty
+	}
+
+	// set mode
+	Serial.print(F("AT+CWMODE=3"));
+	Serial.print(ESP_LINE_TERM);
+	delay(50);		// this really should be replaced with "wait_for_OK()" !
+
+	// join access point
+	Serial.print(F("AT+CWJAP=\""));
+	Serial.print(ESP_SSID);
+	Serial.print(F("\",\""));
+	Serial.print(ESP_PASS);
+	Serial.print(F("\""));
+	Serial.print(ESP_LINE_TERM);
+	delay(5000);
+
+	// set static IP address
+	Serial.print(F("AT+CIPSTA=\""));
+	Serial.print(ESP_STATIC_IP);
+	Serial.print(F("\""));
+	Serial.print(ESP_LINE_TERM);
+	delay(50);
+
+	// get IP address
+	Serial.print(F("AT+CIFSR"));
+	Serial.print(ESP_LINE_TERM);
+	delay(50);
+
+	// now you should be able to PING the board
+
+	// start SERVER
+	Serial.print(F("AT+CIPMODE=0"));
+	Serial.print(ESP_LINE_TERM);
+	delay(50);
+
+	Serial.print(F("AT+CIPMUX=1"));
+	Serial.print(ESP_LINE_TERM);
+	delay(50);
+
+	Serial.print(F("AT+CIPSERVER=1,"));
+	Serial.print(ESP_SERVER_PORT);
+	Serial.print(ESP_LINE_TERM);
+	delay(50);
+
+	strip.setPixelColor(0, 32, 0, 0);
+	strip.show();
+	delay(250);
+	strip.setPixelColor(0, 0, 32, 0);
+	strip.show();
+	delay(250);
+	clear_serial_buffer();
 }
