@@ -14,8 +14,8 @@
 //       telnet -e + 192.168.1.199 80
 //
 
-#define ESP_SSID (F("<your stuff>"))
-#define ESP_PASS (F("<your stuff>"))
+#define ESP_SSID (F("---"))
+#define ESP_PASS (F("---"))
 #define ESP_STATIC_IP (F("192.168.1.199"))
 #define ESP_SERVER_PORT (F("80"))
 #define ESP_LINE_TERM (F("\r\n"))
@@ -27,6 +27,8 @@
 #include "minimal_test.h"
 
 Adafruit_NeoPixel strip(LEDS, LED_CHAIN_PIN, NEO_GRB + NEO_KHZ800);
+
+String command_str;
 
 void setup(void)
 {
@@ -93,29 +95,118 @@ void setup(void)
 
 	strip.setPixelColor(0, 0, 32, 0);
 	strip.show();
+	clear_serial_buffer();
 }
 
 void loop(void)
 {
-	static uint8_t state = 0;
-
 	if (Serial.available()) {
-		uint8_t dummy = Serial.read();
-		if (dummy == ':') {
-			switch (state) {
-			case 0:
-				strip.setPixelColor(1, 64, 0, 0);
-				state = 1;
-				break;
-			case 1:
-				strip.setPixelColor(1, 0, 64, 0);
-				state = 0;
-				break;
-			default:
-				break;
-			}
+		char c = Serial.read();
+		if (c == '\n') {
+                        //
+                        // debugging
+                        //
+			//parseCommand("+IPD,0,297:GET /blink HTTP/1.1");
+			//parseCommand("+IPD,0,297:GET /on HTTP/1.1");
+			//parseCommand("+IPD,0,297:GET /off HTTP/1.1");
+
+                        parseCommand(command_str);
+			command_str = "";
+                        clear_serial_buffer();
+		} else if (c != '\r')
+			command_str += c;
+	}
+}
+
+void parseCommand(String com_str)
+{
+	String maincmd_str;
+
+	int index_of_semicolon = com_str.indexOf(":");
+
+	if (index_of_semicolon != -1) {
+                // found the ":" in "+IPD,0,297:GET..."
+		
+                /*
+                strip.setPixelColor(indexOfSC, 0, 10, 0);
+		strip.show();
+		delay(250);
+		strip.setPixelColor(indexOfSC, 0, 0, 0);
+		strip.show();
+		delay(250);
+                */
+                
+                /*
+                strip.setPixelColor(com.length(), 0, 10, 0);
+		strip.show();
+		delay(250);
+		strip.setPixelColor(com.length(), 0, 0, 0);
+		strip.show();
+		delay(250);
+                */
+                
+                int index_of_1st_comma = com_str.indexOf(",");
+                int index_of_2nd_comma = com_str.indexOf(",", index_of_1st_comma + 1);
+                
+                /*
+                strip.setPixelColor(index_of_1st_comma + 5, 10, 10, 0);
+                strip.setPixelColor(index_of_2nd_comma + 5, 10, 10, 0);
+                strip.show();   
+                delay(1000);             
+                strip.setPixelColor(index_of_1st_comma + 5, 0, 0, 0);
+                strip.setPixelColor(index_of_2nd_comma + 5, 0, 0, 0);
+                strip.show();                   
+                */
+                
+                String incoming_connection_str = com_str.substring(index_of_1st_comma + 1, index_of_2nd_comma);
+                
+                uint8_t incoming_connection_number = (uint8_t)(incoming_connection_str.toInt());
+
+                /*                
+                strip.setPixelColor(incoming_connection_number + 20, 10, 10, 0);
+                strip.show();
+                delay(250);
+                strip.setPixelColor(incoming_connection_number + 20, 0, 0, 0);
+                strip.show();   
+                delay(250);             
+                */
+                
+		maincmd_str = com_str.substring(index_of_semicolon + 1);
+
+		if (maincmd_str == "GET /blink HTTP/1.1") {
+			strip.setPixelColor(16, 0, 0, 10);
+			strip.show();
+			delay(25);
+			strip.setPixelColor(16, 0, 0, 0);
+			strip.show();
+			delay(25);
+		}
+
+		if (maincmd_str == "GET /off HTTP/1.1") {
+			strip.setPixelColor(16, 0, 0, 0);
 			strip.show();
 		}
+
+		if (maincmd_str == "GET /on HTTP/1.1") {
+			strip.setPixelColor(16, 10, 10, 10);
+			strip.show();
+		}
+
+               	Serial.print(F("AT+CIPSEND="));
+               	Serial.print(incoming_connection_number);
+                Serial.print(F(","));
+                Serial.print(F("31"));
+                Serial.print(ESP_LINE_TERM);
+                delay(2000);
+                Serial.print("Content-Type: text/plain\n");
+                Serial.print("Done!\n");
+              	delay(2000); 
+
+                //close connection
+              	Serial.print(F("AT+CIPCLOSE="));
+        	Serial.print(incoming_connection_number);
+	        Serial.print(ESP_LINE_TERM);
+          	delay(2000);
 	}
 }
 
@@ -147,4 +238,31 @@ void decrease_ESP8266_baud_rate(void)
 	Serial.print(ESP_SLOW_CIOBAUD);
 	Serial.print(ESP_LINE_TERM);
 	delay(50);		// wait a bit so stuff has been sent out
+}
+
+void clear_serial_buffer(void)
+{
+	uint8_t dummy;
+	while (Serial.available()) {
+		dummy = Serial.read();
+	}
+}
+
+void toggle_2nd_WS(void)
+{
+	static uint8_t state = 0;
+	switch (state) {
+	case 0:
+		strip.setPixelColor(1, 0, 32, 0);
+		state = 1;
+		break;
+	case 1:
+		strip.setPixelColor(1, 32, 0, 0);
+		state = 0;
+		break;
+	default:
+		break;
+	}
+	strip.show();
+
 }
