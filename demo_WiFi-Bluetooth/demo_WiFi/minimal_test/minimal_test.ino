@@ -304,7 +304,7 @@ void init_ESP8266(void)
 	wait_for("ready");	// wait for ESP8266 to boot up
 
 	// set mode
-	Serial.print(F("AT+CWMODE=3"));
+	Serial.print(F("AT+CWMODE=1"));
 	Serial.print(ESP_LINE_TERM);
 	wait_for("OK");		// this really should be replaced with "wait_for_OK()" !
 
@@ -342,6 +342,10 @@ void init_ESP8266(void)
 
 	Serial.print(F("AT+CIPSERVER=1,"));
 	Serial.print(ESP_SERVER_PORT);
+	Serial.print(ESP_LINE_TERM);
+	wait_for("OK");
+
+	Serial.print(F("AT+CIPSTO=5000"));
 	Serial.print(ESP_LINE_TERM);
 	wait_for("OK");
 
