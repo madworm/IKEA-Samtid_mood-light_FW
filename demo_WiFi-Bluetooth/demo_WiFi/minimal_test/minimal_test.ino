@@ -185,7 +185,7 @@ void parseCommand(String com_str)
 	}
 }
 
-void wait_for(const char *text)
+bool wait_for(const char *text)
 {
 	// first attempts failed miserably
 	//
@@ -198,6 +198,8 @@ void wait_for(const char *text)
 
 	String temp_str = "";
 
+        bool retval = false;
+
 	uint32_t start_time = millis();
 
 	while ((millis() - start_time) < ESP_TIMEOUT) {
@@ -207,6 +209,7 @@ void wait_for(const char *text)
 			if (c == '\n') {
 				if (temp_str.indexOf(text) != -1) {
 					clear_serial_buffer();
+                                        retval = true;
 					delay(100);
 					break;
 				}
@@ -216,6 +219,8 @@ void wait_for(const char *text)
 		}
 
 	}
+
+        return retval;
 }
 
 void increase_ESP8266_baud_rate(void)
