@@ -129,9 +129,15 @@ void parseCommand(String com_str)
 			Serial.print(F(","));
 			Serial.print(F("22"));
 			Serial.print(ESP_LINE_TERM);
-			wait_for("OK");
+			if (wait_for("OK") != true) {
+				init_ESP8266();
+				return;
+			}
 			Serial.print(F("LED #16: blinked BLUE\n"));
-			wait_for("OK");
+			if (wait_for("OK") != true) {
+				init_ESP8266();
+				return;
+			}
 		} else if (maincmd_str == "GET /off HTTP/1.1") {
 			strip.setPixelColor(16, 0, 0, 0);
 			strip.show();
@@ -141,9 +147,15 @@ void parseCommand(String com_str)
 			Serial.print(F(","));
 			Serial.print(F("13"));
 			Serial.print(ESP_LINE_TERM);
-			wait_for("OK");
+			if (wait_for("OK") != true) {
+				init_ESP8266();
+				return;
+			}
 			Serial.print(F("LED #16: OFF\n"));
-			wait_for("OK");
+			if (wait_for("OK") != true) {
+				init_ESP8266();
+				return;
+			}
 		} else if (maincmd_str == "GET /on HTTP/1.1") {
 			strip.setPixelColor(16, 32, 32, 32);
 			strip.show();
@@ -153,18 +165,30 @@ void parseCommand(String com_str)
 			Serial.print(F(","));
 			Serial.print(F("12"));
 			Serial.print(ESP_LINE_TERM);
-			wait_for("OK");
+			if (wait_for("OK") != true) {
+				init_ESP8266();
+				return;
+			}
 			Serial.print(F("LED #16: ON\n"));
-			wait_for("OK");
+			if (wait_for("OK") != true) {
+				init_ESP8266();
+				return;
+			}
 		} else {
 			Serial.print(F("AT+CIPSEND="));
 			Serial.print(incoming_connection_number);
 			Serial.print(F(","));
 			Serial.print(F("31"));
 			Serial.print(ESP_LINE_TERM);
-			wait_for("OK");
+			if (wait_for("OK") != true) {
+				init_ESP8266();
+				return;
+			}
 			Serial.print(F("commands:\n\n* on\n* off\n* blink\n\n"));
-			wait_for("OK");
+			if (wait_for("OK") != true) {
+				init_ESP8266();
+				return;
+			}
 		}
 
 		// bye bye
@@ -173,15 +197,23 @@ void parseCommand(String com_str)
 		Serial.print(F(","));
 		Serial.print(F("9"));
 		Serial.print(ESP_LINE_TERM);
-		wait_for("OK");
+		if (wait_for("OK") != true) {
+			init_ESP8266();
+			return;
+		}
 		Serial.print(F("Bye Bye!\n"));
-		wait_for("OK");
-
+		if (wait_for("OK") != true) {
+			init_ESP8266();
+			return;
+		}
 		// close connection
 		Serial.print(F("AT+CIPCLOSE="));
 		Serial.print(5);	// close ALL connections. Just closing the current one leads to "busy p..." crap
 		Serial.print(ESP_LINE_TERM);
-		wait_for("OK");
+		if (wait_for("OK") != true) {
+			init_ESP8266();
+			return;
+		}
 	}
 }
 
@@ -198,7 +230,7 @@ bool wait_for(const char *text)
 
 	String temp_str = "";
 
-        bool retval = false;
+	bool retval = false;
 
 	uint32_t start_time = millis();
 
@@ -209,7 +241,17 @@ bool wait_for(const char *text)
 			if (c == '\n') {
 				if (temp_str.indexOf(text) != -1) {
 					clear_serial_buffer();
-                                        retval = true;
+					retval = true;
+					delay(100);
+					break;
+				} else if (temp_str.indexOf("ERROR") != -1) {
+					clear_serial_buffer();
+					retval = false;
+					delay(100);
+					break;
+				} else if (temp_str.indexOf("busy") != -1) {
+					clear_serial_buffer();
+					retval = false;
 					delay(100);
 					break;
 				}
@@ -220,7 +262,7 @@ bool wait_for(const char *text)
 
 	}
 
-        return retval;
+	return retval;
 }
 
 void increase_ESP8266_baud_rate(void)
