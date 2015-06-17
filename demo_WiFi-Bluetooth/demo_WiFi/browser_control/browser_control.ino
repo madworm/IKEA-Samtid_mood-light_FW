@@ -63,45 +63,46 @@ void parseCommand(String com_str)
 
 		maincmd_str = com_str.substring(index_of_semicolon + 1);
 
-		if (maincmd_str.length() > 0) {
+		Serial.print(F("AT+CIPSEND="));
+		Serial.print(incoming_connection_number);
+		Serial.print(F(","));
+		Serial.print(11 + maincmd_str.length() + 1 + 15 + number_of_digits(maincmd_str.length()) + 1);
+		Serial.print(ESP_LINE_TERM);
+		if (wait_for("OK") != true) {
+			init_ESP8266();
+			return;
+		}
+		Serial.print("\nYou sent: ");	// 11
+		Serial.print(maincmd_str);
+		Serial.print(F("\n"));	// 1
+		Serial.print(F("Reqest length: "));	// 15
+		Serial.print(maincmd_str.length());
+		Serial.print(F("\n"));	// 1
+		if (wait_for("OK") != true) {
+			init_ESP8266();
+			return;
+		}
+		// parsing maincmd_str goes here
+		// proposed format: mode=<...>&start=<...>&stop=<...>&hue=<...>&sat=<...>&val=<...>&
+		// default values: mode = 0, start = 0, stop = (LEDS-1), (hue,sat,val) = current values
+
+		if (maincmd_str.length() <= 14) {
 
 			Serial.print(F("AT+CIPSEND="));
 			Serial.print(incoming_connection_number);
 			Serial.print(F(","));
-			Serial.print(12 + maincmd_str.length() + 1 + 15 + number_of_digits(maincmd_str.length()) + 1);
+			Serial.print(F("14"));
 			Serial.print(ESP_LINE_TERM);
 			if (wait_for("OK") != true) {
 				init_ESP8266();
 				return;
 			}
-			Serial.print("\n\nYou sent: ");	// 12
-			Serial.print(maincmd_str);
-			Serial.print(F("\n"));	// 1
-			Serial.print(F("Reqest length: "));	// 15
-			Serial.print(maincmd_str.length());
-			Serial.print(F("\n"));	// 1
-			if (wait_for("OK") != true) {
-				init_ESP8266();
-				return;
-			}
-
-		} else {
-			Serial.print(F("AT+CIPSEND="));
-			Serial.print(incoming_connection_number);
-			Serial.print(F(","));
-			Serial.print(F("31"));
-			Serial.print(ESP_LINE_TERM);
-			if (wait_for("OK") != true) {
-				init_ESP8266();
-				return;
-			}
-			Serial.print(F("commands:\n\n* on\n* off\n* blink\n\n"));
+			Serial.print(F("commands: tba\n"));	// 14
 			if (wait_for("OK") != true) {
 				init_ESP8266();
 				return;
 			}
 		}
-
 		// bye bye
 		Serial.print(F("AT+CIPSEND="));
 		Serial.print(incoming_connection_number);
@@ -112,7 +113,7 @@ void parseCommand(String com_str)
 			init_ESP8266();
 			return;
 		}
-		Serial.print(F("Bye Bye!\n"));
+		Serial.print(F("Bye Bye!\n"));	// 9
 		if (wait_for("OK") != true) {
 			init_ESP8266();
 			return;
