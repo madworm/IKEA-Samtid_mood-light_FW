@@ -15,7 +15,7 @@
 #define ESP_LINE_TERM (F("\r\n"))
 #define ESP_SLOW_CIOBAUD 9600UL
 #define ESP_FAST_CIOBAUD 115200UL
-#define ESP_TIMEOUT 15000UL
+#define ESP_TIMEOUT 5000UL
 
 #include <stdint.h>
 #include <Adafruit_NeoPixel.h>
@@ -168,10 +168,17 @@ bool wait_for(const char *text)
 					break;
 				}
 				temp_str = "";	// didn't find "OK" in this line, clear & keep on reading new data
-			} else if (c != '\r')
+			} else if (c != '\r') {
 				temp_str += c;
-		}
+			}
 
+			if (temp_str.length() > 32) {
+				// throw away everything except the last 32 characters
+				// the ESP8266 spits out a lot of garbage after booting
+				// before anything useful is sent (e.g. "ready").
+				temp_str = "";
+			}
+		}
 	}
 
 	return retval;
