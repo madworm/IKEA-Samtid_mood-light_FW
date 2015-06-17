@@ -246,7 +246,7 @@ void lamp_test(void)
 
 void init_ESP8266(void)
 {
-	Serial.begin(ESP_SLOW_CIOBAUD);
+        Serial.begin(ESP_FAST_CIOBAUD);
 	while (Serial.available()) {
 		uint8_t dummy = Serial.read();	// make sure input butter is empty
 	}
