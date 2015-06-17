@@ -62,30 +62,30 @@ void parseCommand(String com_str)
 		uint8_t incoming_connection_number = (uint8_t) (incoming_connection_str.toInt());
 
 		maincmd_str = com_str.substring(index_of_semicolon + 1);
-#
-#
-#
+
 		if (maincmd_str.length() > 0) {
-  
-                        Serial.print(F("AT+CIPSEND="));
-                        Serial.print(incoming_connection_number);
-                        Serial.print(F(","));
-                        Serial.print(maincmd_str.length()+14);
-                        Serial.print(ESP_LINE_TERM);
-                        if (wait_for("OK") != true) {
-				init_ESP8266();
-				return;
-			}
-                        Serial.print("\n\nYou sent: ");
-			Serial.print(maincmd_str);
-                        Serial.print(F("\n\n"));
+
+			Serial.print(F("AT+CIPSEND="));
+			Serial.print(incoming_connection_number);
+			Serial.print(F(","));
+			Serial.print(12 + maincmd_str.length() + 1 + 15 + number_of_digits(maincmd_str.length()) + 1);
+			Serial.print(ESP_LINE_TERM);
 			if (wait_for("OK") != true) {
 				init_ESP8266();
 				return;
-			}                        
-  
+			}
+			Serial.print("\n\nYou sent: ");	// 12
+			Serial.print(maincmd_str);
+			Serial.print(F("\n"));	// 1
+			Serial.print(F("Reqest length: "));	// 15
+			Serial.print(maincmd_str.length());
+			Serial.print(F("\n"));	// 1
+			if (wait_for("OK") != true) {
+				init_ESP8266();
+				return;
+			}
 
-  		} else {
+		} else {
 			Serial.print(F("AT+CIPSEND="));
 			Serial.print(incoming_connection_number);
 			Serial.print(F(","));
@@ -221,6 +221,25 @@ void toggle_2nd_WS(void)
 
 }
 
+unsigned int number_of_digits(unsigned int number)
+{
+	unsigned int digits = 0;
+	unsigned int temp;
+
+	temp = number;
+
+	if (temp == 0) {
+		digits++;
+	}
+
+	while (temp > 0) {
+		temp = temp / 10;
+		digits++;
+	}
+
+	return digits;
+}
+
 void lamp_test(void)
 {
 	uint8_t LED_counter;
@@ -246,7 +265,7 @@ void lamp_test(void)
 
 void init_ESP8266(void)
 {
-        Serial.begin(ESP_FAST_CIOBAUD);
+	Serial.begin(ESP_FAST_CIOBAUD);
 	while (Serial.available()) {
 		uint8_t dummy = Serial.read();	// make sure input butter is empty
 	}
