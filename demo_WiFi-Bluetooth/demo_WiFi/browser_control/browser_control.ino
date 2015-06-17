@@ -279,6 +279,8 @@ void init_ESP8266(void)
 	pinMode(ENABLE, OUTPUT);
 	digitalWrite(ENABLE, HIGH);
 
+	// this doesn't seem to work & times out !?!
+	// the device sends a lot of garbage when booting
 	wait_for("ready");	// wait for ESP8266 to boot up
 
 	// set mode
