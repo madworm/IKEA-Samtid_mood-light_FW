@@ -15,7 +15,7 @@
 #define ESP_LINE_TERM (F("\r\n"))
 #define ESP_SLOW_CIOBAUD 9600UL
 #define ESP_FAST_CIOBAUD 115200UL
-#define ESP_TIMEOUT 5000UL
+#define ESP_TIMEOUT 10000UL
 
 #include <stdint.h>
 #include <Adafruit_NeoPixel.h>
