@@ -359,7 +359,9 @@ bool init_ESP8266(void)
 	if (retval == true) {
 		strip.setPixelColor(0, 0, 32, 0);
 		strip.show();
-		delay(500);
+		delay(250);
+		strip.setPixelColor(0, 0, 0, 0);
+		strip.show();
 	}
 	clear_serial_buffer();
 
