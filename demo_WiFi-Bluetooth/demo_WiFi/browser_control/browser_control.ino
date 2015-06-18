@@ -47,7 +47,7 @@ void loop(void)
 	if (Serial.available()) {
 		char c = Serial.read();
 		if (c == '\n') {
-			parseCommand(command_str);
+			parseCommand(&command_str);
 			command_str = "";
 			clear_serial_buffer();
 		} else if (c != '\r')
@@ -55,47 +55,41 @@ void loop(void)
 	}
 }
 
-void parseCommand(String com_str)
+void parseCommand(String * com_str)
 {
-	String maincmd_str;
-
-	int index_of_semicolon = com_str.indexOf(":");
+	int index_of_semicolon = com_str->indexOf(":");
 
 	// set default values
-	unsigned int led_mode = 0;
-	unsigned int led_start = 0;
-	unsigned int led_stop = (LEDS - 1);
-	unsigned int led_hue = 0;
-	unsigned int led_sat = 255;
-	unsigned int led_val = 32;
+
+	REQ_VAR req_vars[6] = { {"mode=", 0, 5}, {"start=", 0, 6}, {"stop=", (LEDS - 1), 5}, {"hue=", 0, 4}, {"sat=", 255, 4}, {"val=", 32, 4} };
 
 	if (index_of_semicolon != -1) {
 		// found the ":" in "+IPD,0,297:GET..."
 		request_ctr++;
 
-		int index_of_1st_comma = com_str.indexOf(",");
-		int index_of_2nd_comma = com_str.indexOf(",", index_of_1st_comma + 1);
+		int index_of_1st_comma = com_str->indexOf(",");
+		int index_of_2nd_comma = com_str->indexOf(",", index_of_1st_comma + 1);
 
-		String incoming_connection_str = com_str.substring(index_of_1st_comma + 1, index_of_2nd_comma);
+		String incoming_connection_str = com_str->substring(index_of_1st_comma + 1, index_of_2nd_comma);
 
 		uint8_t incoming_connection_number = (uint8_t) (incoming_connection_str.toInt());
 
-		maincmd_str = com_str.substring(index_of_semicolon + 1);
+		*com_str = com_str->substring(index_of_semicolon + 1);
 
 		Serial.print(F("AT+CIPSEND="));
 		Serial.print(incoming_connection_number);
 		Serial.print(F(","));
-		Serial.print(11 + maincmd_str.length() + 1 + 16 + NoD(maincmd_str.length()) + 1 + 15 + NoD(request_ctr) + 1);
+		Serial.print(11 + com_str->length() + 1 + 16 + NoD(com_str->length()) + 1 + 15 + NoD(request_ctr) + 1);
 		Serial.print(ESP_LINE_TERM);
 		if (wait_for("OK") != true) {
 			init_ESP8266();
 			return;
 		}
 		Serial.print("\nYou sent: ");	// 11
-		Serial.print(maincmd_str);
+		Serial.print(*com_str);
 		Serial.print(F("\n"));	// 1
 		Serial.print(F("Request length: "));	// 16
-		Serial.print(maincmd_str.length());
+		Serial.print(com_str->length());
 		Serial.print(F("\n"));	// 1
 		Serial.print(F("Request count: "));	// 15
 		Serial.print(request_ctr);
@@ -105,7 +99,7 @@ void parseCommand(String com_str)
 			return;
 		}
 
-		if (maincmd_str.length() <= 14) {
+		if (com_str->length() <= 14) {
 
 			Serial.print(F("AT+CIPSEND="));
 			Serial.print(incoming_connection_number);
@@ -122,109 +116,65 @@ void parseCommand(String com_str)
 				return;
 			}
 		} else {
-			// parsing maincmd_str goes here
+			// parsing com_str goes here
 			// proposed format: mode=<...>&start=<...>&stop=<...>&hue=<...>&sat=<...>&val=<...>&
 			// default values: mode = 0, start = 0, stop = (LEDS-1), (hue,sat,val) = current values
 
 			// look for mode=<...> etc.
 
-			int index_of_mode = maincmd_str.indexOf("mode=");	// -1 if nothing found
-			if (index_of_mode != -1) {
-				int index_of_mode_term = maincmd_str.indexOf("&", index_of_mode);	// search '&' after 'mode'
-				if (index_of_mode_term != -1) {
-					String tmp_str = maincmd_str.substring(index_of_mode + 5, index_of_mode_term);	// "mode=123&..." take "123"
-					led_mode = constrain((unsigned int)(tmp_str.toInt()), 0, 255);
+			uint8_t ctr;
+			int index_a;
+			int index_b;
+
+			for (ctr = 0; ctr <= 5; ctr++) {
+				index_a = com_str->indexOf(req_vars[ctr].name);
+				if (index_a != -1) {
+					index_b = com_str->indexOf("&", index_a);
+					if (index_b != -1) {
+						String tmp_str = com_str->substring(index_a + req_vars[ctr].offset, index_b);
+						req_vars[ctr].value = constrain((unsigned int)(tmp_str.toInt()), 0, 255);
+					}
 				}
 			}
 
-			int index_of_start = maincmd_str.indexOf("start=");
-			if (index_of_start != -1) {
-				int index_of_start_term = maincmd_str.indexOf("&", index_of_start);
-				if (index_of_start_term != -1) {
-					String tmp_str = maincmd_str.substring(index_of_start + 6, index_of_start_term);	// "start=234&..." take "234"
-					led_start = constrain((unsigned int)(tmp_str.toInt()), 0, (LEDS - 1));
-				}
-			}
+			uint8_t tx_data_package_length = 0;
 
-			int index_of_stop = maincmd_str.indexOf("stop=");
-			if (index_of_stop != -1) {
-				int index_of_stop_term = maincmd_str.indexOf("&", index_of_stop);
-				if (index_of_stop_term != -1) {
-					String tmp_str = maincmd_str.substring(index_of_stop + 5, index_of_stop_term);	// "stop=456&..." take "456"
-					led_stop = constrain((unsigned int)(tmp_str.toInt()), 0, (LEDS - 1));
-				}
-			}
-
-			int index_of_hue = maincmd_str.indexOf("hue=");
-			if (index_of_hue != -1) {
-				int index_of_hue_term = maincmd_str.indexOf("&", index_of_hue);
-				if (index_of_hue_term != -1) {
-					String tmp_str = maincmd_str.substring(index_of_hue + 4, index_of_hue_term);	// "hue=123&..." take "123"
-					led_hue = constrain((unsigned int)(tmp_str.toInt()), 0, 360);
-				}
-			}
-
-			int index_of_sat = maincmd_str.indexOf("sat=");
-			if (index_of_sat != -1) {
-				int index_of_sat_term = maincmd_str.indexOf("&", index_of_sat);
-				if (index_of_sat_term != -1) {
-					String tmp_str = maincmd_str.substring(index_of_sat + 4, index_of_sat_term);	// "sat=456&..." take "456"
-					led_sat = constrain((unsigned int)(tmp_str.toInt()), 0, 255);
-				}
-			}
-
-			int index_of_val = maincmd_str.indexOf("val=");
-			if (index_of_val != -1) {
-				int index_of_val_term = maincmd_str.indexOf("&", index_of_val);
-				if (index_of_val_term != -1) {
-					String tmp_str = maincmd_str.substring(index_of_val + 4, index_of_val_term);	// "val=789&..." take "789"
-					led_val = constrain((unsigned int)(tmp_str.toInt()), 0, 255);
-				}
+			for (ctr = 0; ctr <= 5; ctr++) {
+				tx_data_package_length += (req_vars[ctr].name.length() + NoD(req_vars[ctr].value) + 1);
 			}
 
 			Serial.print(F("AT+CIPSEND="));
 			Serial.print(incoming_connection_number);
 			Serial.print(F(","));
-			Serial.print(NoD(led_mode) + NoD(led_start) + NoD(led_stop) + NoD(led_hue) + NoD(led_sat) + NoD(led_val) + 40);
+			Serial.print(tx_data_package_length);
 			Serial.print(ESP_LINE_TERM);
 			if (wait_for("OK") != true) {
 				init_ESP8266();
 				return;
 			}
-			Serial.print(F("mode: "));	// 6
-			Serial.print(led_mode);
-			Serial.print(F("\n"));	// 1                        
-			Serial.print(F("start: "));	// 7
-			Serial.print(led_start);
-			Serial.print(F("\n"));	// 1                                                
-			Serial.print(F("stop: "));	// 6
-			Serial.print(led_stop);
-			Serial.print(F("\n"));	// 1                                                
-			Serial.print(F("hue: "));	// 5
-			Serial.print(led_hue);
-			Serial.print(F("\n"));	// 1                                                
-			Serial.print(F("sat: "));	// 5
-			Serial.print(led_sat);
-			Serial.print(F("\n"));	// 1                                                
-			Serial.print(F("val: "));	// 5
-			Serial.print(led_val);
-			Serial.print(F("\n"));	// 1                                                
+
+			for (ctr = 0; ctr <= 5; ctr++) {
+				Serial.print(req_vars[ctr].name);
+				Serial.print(req_vars[ctr].value);
+				Serial.print("\n");	// 1
+			}
+
 			if (wait_for("OK") != true) {
 				init_ESP8266();
 				return;
 			}
 
-			hsv_to_rgb(led_hue, led_sat, led_val, rgb_values);
+			hsv_to_rgb(req_vars[3].value, req_vars[4].value, req_vars[5].value, rgb_values);
 
 			uint8_t red = rgb_values[0];
 			uint8_t green = rgb_values[1];
 			uint8_t blue = rgb_values[2];
 
-			switch (led_mode) {
+			switch (req_vars[0].value) {
 			case 0:
 				uint8_t which_led;
 
-				for (which_led = led_start; which_led <= led_stop; which_led++) {
+				for (which_led = req_vars[1].value; which_led <= req_vars[2].value; which_led++) {
 					strip.setPixelColor(which_led, red, green, blue);
 				}
 				strip.show();

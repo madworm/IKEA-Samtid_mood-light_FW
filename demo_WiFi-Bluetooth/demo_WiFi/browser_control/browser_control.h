@@ -14,3 +14,9 @@
 #define ENABLE 6		// for ESP8266-1 module + adapter
 
 #endif
+
+typedef struct REQ_VAR {
+    String name;
+    unsigned int value;
+    uint8_t offset;    
+} REQ_VAR;
