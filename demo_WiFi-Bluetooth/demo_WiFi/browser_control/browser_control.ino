@@ -24,6 +24,7 @@
 Adafruit_NeoPixel strip(LEDS, LED_CHAIN_PIN, NEO_GRB + NEO_KHZ800);
 
 String command_str;
+unsigned int request_ctr = 0;
 
 void setup(void)
 {
@@ -59,6 +60,7 @@ void parseCommand(String com_str)
 
 	if (index_of_semicolon != -1) {
 		// found the ":" in "+IPD,0,297:GET..."
+		request_ctr++;
 
 		int index_of_1st_comma = com_str.indexOf(",");
 		int index_of_2nd_comma = com_str.indexOf(",", index_of_1st_comma + 1);
@@ -72,7 +74,7 @@ void parseCommand(String com_str)
 		Serial.print(F("AT+CIPSEND="));
 		Serial.print(incoming_connection_number);
 		Serial.print(F(","));
-		Serial.print(11 + maincmd_str.length() + 1 + 15 + number_of_digits(maincmd_str.length()) + 1);
+		Serial.print(11 + maincmd_str.length() + 1 + 16 + number_of_digits(maincmd_str.length()) + 1 + 15 + number_of_digits(request_ctr) + 1);
 		Serial.print(ESP_LINE_TERM);
 		if (wait_for("OK") != true) {
 			init_ESP8266();
@@ -81,8 +83,11 @@ void parseCommand(String com_str)
 		Serial.print("\nYou sent: ");	// 11
 		Serial.print(maincmd_str);
 		Serial.print(F("\n"));	// 1
-		Serial.print(F("Reqest length: "));	// 15
+		Serial.print(F("Request length: "));	// 16
 		Serial.print(maincmd_str.length());
+		Serial.print(F("\n"));	// 1
+		Serial.print(F("Request count: "));	// 15
+		Serial.print(request_ctr);
 		Serial.print(F("\n"));	// 1
 		if (wait_for("OK") != true) {
 			init_ESP8266();

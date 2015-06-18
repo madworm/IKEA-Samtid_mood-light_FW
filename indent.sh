@@ -1,4 +1,4 @@
 #!/bin/bash
 
-indent -linux -l150 $1
+indent -linux -l250 $1
 
