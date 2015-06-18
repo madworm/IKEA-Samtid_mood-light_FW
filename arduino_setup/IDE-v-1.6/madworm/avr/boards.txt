@@ -11,21 +11,48 @@
 # Make sure to select your programmer type in the menu!
 # this makes sure the correct FUSE settings are used
 #
+
+## ISML
+## ----
 isml.name=IKEA Samtid mood-light - ATmega168P / 16MHz Quartz / Optiboot 
 [default]
 isml.upload.protocol=arduino
-isml.upload.maximum_size=15872
-isml.upload.speed=115200
 isml.upload.tool=arduino:avrdude
+
+isml.bootloader.tool=arduino:avrdude
 isml.bootloader.low_fuses=0xFF
-isml.bootloader.high_fuses=0xDD
-isml.bootloader.extended_fuses=0x04
-isml.bootloader.file=optiboot/optiboot_atmega168p_16MHz.hex
 isml.bootloader.unlock_bits=0x3F
 isml.bootloader.lock_bits=0x0F
-isml.bootloader.tool=arduino:avrdude
-isml.build.mcu=atmega168p
+
 isml.build.f_cpu=16000000L
 isml.build.core=arduino:arduino
 isml.build.variant=arduino:eightanaloginputs
 isml.build.board=AVR_ISML
+
+## ISML w/ ATmega168P [QFN32]
+## --------------------------
+isml.menu.cpu.atmega168p=atmega168p
+
+isml.menu.cpu.atmega168p.bootloader.high_fuses=0xDD
+isml.menu.cpu.atmega168p.bootloader.extended_fuses=0x04
+isml.menu.cpu.atmega168p.bootloader.file=optiboot/optiboot_atmega168p_16MHz.hex
+
+isml.menu.cpu.atmega168p.maximum_size=15872
+isml.menu.cpu.atmega168p.maximum_data_size=1024
+isml.menu.cpu.atmega168p.upload.speed=115200
+
+isml.menu.cpu.atmega168p.build.mcu=atmega168p
+
+## ISML w/ ATmega328P [QFN32]
+## --------------------------
+isml.menu.cpu.atmega328=ATmega328
+
+isml.menu.cpu.atmega328.bootloader.high_fuses=0xDE
+isml.menu.cpu.atmega328.bootloader.extended_fuses=0x05
+isml.menu.cpu.atmega328.bootloader.file=optiboot/optiboot_atmega328.hex
+
+isml.menu.cpu.atmega328.upload.maximum_size=32256
+isml.menu.cpu.atmega328.upload.maximum_data_size=2048
+isml.menu.cpu.atmega328.upload.speed=115200
+
+isml.menu.cpu.atmega328.build.mcu=atmega328p
