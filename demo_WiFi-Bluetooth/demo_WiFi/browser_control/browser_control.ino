@@ -23,7 +23,10 @@
 
 Adafruit_NeoPixel strip(LEDS, LED_CHAIN_PIN, NEO_GRB + NEO_KHZ800);
 
+uint8_t rgb_values[3] = { 0, 0, 0 };	// store RGB values after conversion from HSV
+
 String command_str;
+
 unsigned int request_ctr = 0;
 
 void setup(void)
@@ -64,7 +67,7 @@ void parseCommand(String com_str)
 	unsigned int led_stop = (LEDS - 1);
 	unsigned int led_hue = 0;
 	unsigned int led_sat = 255;
-	unsigned int led_val = 255;
+	unsigned int led_val = 32;
 
 	if (index_of_semicolon != -1) {
 		// found the ":" in "+IPD,0,297:GET..."
@@ -130,7 +133,7 @@ void parseCommand(String com_str)
 				int index_of_mode_term = maincmd_str.indexOf("&", index_of_mode);	// search '&' after 'mode'
 				if (index_of_mode_term != -1) {
 					String tmp_str = maincmd_str.substring(index_of_mode + 5, index_of_mode_term);	// "mode=123&..." take "123"
-					led_mode = (unsigned int)(tmp_str.toInt());
+					led_mode = constrain((unsigned int)(tmp_str.toInt()), 0, 255);
 				}
 			}
 
@@ -139,7 +142,7 @@ void parseCommand(String com_str)
 				int index_of_start_term = maincmd_str.indexOf("&", index_of_start);
 				if (index_of_start_term != -1) {
 					String tmp_str = maincmd_str.substring(index_of_start + 6, index_of_start_term);	// "start=234&..." take "234"
-					led_start = (unsigned int)(tmp_str.toInt());
+					led_start = constrain((unsigned int)(tmp_str.toInt()), 0, (LEDS - 1));
 				}
 			}
 
@@ -148,7 +151,7 @@ void parseCommand(String com_str)
 				int index_of_stop_term = maincmd_str.indexOf("&", index_of_stop);
 				if (index_of_stop_term != -1) {
 					String tmp_str = maincmd_str.substring(index_of_stop + 5, index_of_stop_term);	// "stop=456&..." take "456"
-					led_stop = (unsigned int)(tmp_str.toInt());
+					led_stop = constrain((unsigned int)(tmp_str.toInt()), 0, (LEDS - 1));
 				}
 			}
 
@@ -157,7 +160,7 @@ void parseCommand(String com_str)
 				int index_of_hue_term = maincmd_str.indexOf("&", index_of_hue);
 				if (index_of_hue_term != -1) {
 					String tmp_str = maincmd_str.substring(index_of_hue + 4, index_of_hue_term);	// "hue=123&..." take "123"
-					led_hue = (unsigned int)(tmp_str.toInt());
+					led_hue = constrain((unsigned int)(tmp_str.toInt()), 0, 360);
 				}
 			}
 
@@ -166,7 +169,7 @@ void parseCommand(String com_str)
 				int index_of_sat_term = maincmd_str.indexOf("&", index_of_sat);
 				if (index_of_sat_term != -1) {
 					String tmp_str = maincmd_str.substring(index_of_sat + 4, index_of_sat_term);	// "sat=456&..." take "456"
-					led_sat = (unsigned int)(tmp_str.toInt());
+					led_sat = constrain((unsigned int)(tmp_str.toInt()), 0, 255);
 				}
 			}
 
@@ -175,7 +178,7 @@ void parseCommand(String com_str)
 				int index_of_val_term = maincmd_str.indexOf("&", index_of_val);
 				if (index_of_val_term != -1) {
 					String tmp_str = maincmd_str.substring(index_of_val + 4, index_of_val_term);	// "val=789&..." take "789"
-					led_val = (unsigned int)(tmp_str.toInt());
+					led_val = constrain((unsigned int)(tmp_str.toInt()), 0, 255);
 				}
 			}
 
@@ -210,6 +213,26 @@ void parseCommand(String com_str)
 				init_ESP8266();
 				return;
 			}
+
+			hsv_to_rgb(led_hue, led_sat, led_val, rgb_values);
+
+			uint8_t red = rgb_values[0];
+			uint8_t green = rgb_values[1];
+			uint8_t blue = rgb_values[2];
+
+			switch (led_mode) {
+			case 0:
+				uint8_t which_led;
+
+				for (which_led = led_start; which_led <= led_stop; which_led++) {
+					strip.setPixelColor(which_led, red, green, blue);
+				}
+				strip.show();
+				break;
+			default:
+				break;
+			}
+
 		}
 
 		// bye bye
@@ -464,4 +487,67 @@ bool init_ESP8266(void)
 	clear_serial_buffer();
 
 	return retval;
+}
+
+void hsv_to_rgb(uint16_t hue, uint8_t sat, uint8_t val, uint8_t * tmp_array)
+{
+	/* BETA */
+
+	/* finally thrown out all of the float stuff and replaced with uint16_t
+	 *
+	 * hue: 0-->360 (hue, color)
+	 * sat: 0-->255 (saturation)
+	 * val: 0-->255 (value, brightness)
+	 *
+	 */
+
+	hue = hue % 360;
+	uint8_t sector = hue / 60;
+	uint8_t rel_pos = hue - (sector * 60);
+	uint16_t const mmd = 65025;	// 255 * 255 /* maximum modulation depth */
+	uint16_t top = val * 255;
+	uint16_t bottom = val * (255 - sat);	/* (val*255) - (val*255)*(sat/255) */
+	uint16_t slope = (uint16_t) (val) * (uint16_t) (sat) / 120;	/* dy/dx = (top-bottom)/(2*60) -- val*sat: modulation_depth dy */
+	uint16_t a = bottom + slope * rel_pos;
+	uint16_t b = bottom + (uint16_t) (val) * (uint16_t) (sat) / 2 + slope * rel_pos;
+	uint16_t c = top - slope * rel_pos;
+	uint16_t d = top - (uint16_t) (val) * (uint16_t) (sat) / 2 - slope * rel_pos;
+
+	uint16_t R, G, B;
+
+	if (sector == 0) {
+		R = c;
+		G = a;
+		B = bottom;
+	} else if (sector == 1) {
+		R = d;
+		G = b;
+		B = bottom;
+	} else if (sector == 2) {
+		R = bottom;
+		G = c;
+		B = a;
+	} else if (sector == 3) {
+		R = bottom;
+		G = d;
+		B = b;
+	} else if (sector == 4) {
+		R = a;
+		G = bottom;
+		B = c;
+	} else {
+		R = b;
+		G = bottom;
+		B = d;
+	}
+
+	uint16_t scale_factor = mmd / 255;
+
+	R = (uint8_t) (R / scale_factor);
+	G = (uint8_t) (G / scale_factor);
+	B = (uint8_t) (B / scale_factor);
+
+	tmp_array[0] = R;
+	tmp_array[1] = G;
+	tmp_array[2] = B;
 }
