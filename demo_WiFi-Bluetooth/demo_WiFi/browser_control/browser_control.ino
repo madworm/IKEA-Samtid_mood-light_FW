@@ -29,7 +29,13 @@ void setup(void)
 {
 	strip.begin();
 	lamp_test();
-	init_ESP8266();
+
+	bool ESP8266_OK = false;
+
+	// loop until we get the ESP8266 properly initialized & joined a network
+	while (ESP8266_OK == false) {
+		ESP8266_OK = init_ESP8266();
+	}
 }
 
 void loop(void)
@@ -131,15 +137,6 @@ void parseCommand(String com_str)
 
 bool wait_for(const char *text)
 {
-	// first attempts failed miserably
-	//
-	// need to precicely check what the ESP8266 sends back
-	// (including the \r\n stuff) --> logic analyzer
-	// terminal + hexdump gives inconsistent results [useless]
-	//
-	// either this is inherently inconsistent / unreliable or I had
-	// a pretty substantial "brain-AFK" yesterday
-
 	String temp_str = "";
 
 	bool retval = false;
@@ -271,13 +268,20 @@ void lamp_test(void)
 
 }
 
-void init_ESP8266(void)
+bool init_ESP8266(void)
 {
+	bool retval = true;
+
 	Serial.begin(ESP_FAST_CIOBAUD);
 	while (Serial.available()) {
 		uint8_t dummy = Serial.read();	// make sure input butter is empty
 	}
 
+	strip.setPixelColor(0, 32, 0, 0);
+	strip.show();
+	delay(250);
+
+	// reset ESP8266 & enable
 	pinMode(RESET, OUTPUT);
 	digitalWrite(RESET, LOW);
 	delay(100);
@@ -286,15 +290,15 @@ void init_ESP8266(void)
 	pinMode(ENABLE, OUTPUT);
 	digitalWrite(ENABLE, HIGH);
 
-	// this doesn't seem to work & times out !?!
-	// the device sends a lot of garbage when booting
-	wait_for("ready");	// wait for ESP8266 to boot up
-
+	if (wait_for("ready") != true) {	// wait for ESP8266 to boot up
+		retval = false;
+	}
 	// set mode
 	Serial.print(F("AT+CWMODE=1"));
 	Serial.print(ESP_LINE_TERM);
-	wait_for("OK");		// this really should be replaced with "wait_for_OK()" !
-
+	if (wait_for("OK") != true) {
+		retval = false;	// this really should be replaced with "wait_for_OK()" !
+	}
 	// join access point
 	Serial.print(F("AT+CWJAP=\""));
 	Serial.print(ESP_SSID);
@@ -302,45 +306,57 @@ void init_ESP8266(void)
 	Serial.print(ESP_PASS);
 	Serial.print(F("\""));
 	Serial.print(ESP_LINE_TERM);
-	wait_for("OK");
-
+	if (wait_for("OK") != true) {
+		retval = false;
+	}
 	// set static IP address
 	Serial.print(F("AT+CIPSTA=\""));
 	Serial.print(ESP_STATIC_IP);
 	Serial.print(F("\""));
 	Serial.print(ESP_LINE_TERM);
-	wait_for("OK");
-
+	if (wait_for("OK") != true) {
+		retval = false;
+	}
 	// get IP address
 	Serial.print(F("AT+CIFSR"));
 	Serial.print(ESP_LINE_TERM);
-	wait_for("OK");
-
+	if (wait_for("OK") != true) {
+		retval = false;
+	}
 	// now you should be able to PING the board
 
 	// start SERVER
 	Serial.print(F("AT+CIPMODE=0"));
 	Serial.print(ESP_LINE_TERM);
-	wait_for("OK");
+	if (wait_for("OK") != true) {
+		retval = false;
+	}
 
 	Serial.print(F("AT+CIPMUX=1"));
 	Serial.print(ESP_LINE_TERM);
-	wait_for("OK");
+	if (wait_for("OK") != true) {
+		retval = false;
+	}
 
 	Serial.print(F("AT+CIPSERVER=1,"));
 	Serial.print(ESP_SERVER_PORT);
 	Serial.print(ESP_LINE_TERM);
-	wait_for("OK");
+	if (wait_for("OK") != true) {
+		retval = false;
+	}
 
 	Serial.print(F("AT+CIPSTO=5000"));
 	Serial.print(ESP_LINE_TERM);
-	wait_for("OK");
+	if (wait_for("OK") != true) {
+		retval = false;
+	}
 
-	strip.setPixelColor(0, 32, 0, 0);
-	strip.show();
-	delay(250);
-	strip.setPixelColor(0, 0, 32, 0);
-	strip.show();
-	delay(250);
+	if (retval == true) {
+		strip.setPixelColor(0, 0, 32, 0);
+		strip.show();
+		delay(500);
+	}
 	clear_serial_buffer();
+
+	return retval;
 }
