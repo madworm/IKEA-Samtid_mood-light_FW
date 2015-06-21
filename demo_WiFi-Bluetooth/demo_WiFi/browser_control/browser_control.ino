@@ -61,7 +61,7 @@ void parseCommand(String * com_str)
 
 	// set default values
 
-	REQ_VAR req_vars[6] = { {"mode=", 0, 5}, {"start=", 0, 6}, {"stop=", (LEDS - 1), 5}, {"hue=", 0, 4}, {"sat=", 255, 4}, {"val=", 32, 4} };
+	REQ_VAR req_vars[6] = { {"mode=", 0, 16, 5}, {"start=", 0, (LEDS - 1), 6}, {"stop=", (LEDS - 1), (LEDS - 1), 5}, {"hue=", 0, 360, 4}, {"sat=", 255, 255, 4}, {"val=", 32, 255, 4} };
 
 	if (index_of_semicolon != -1) {
 		// found the ":" in "+IPD,0,297:GET..."
@@ -132,7 +132,7 @@ void parseCommand(String * com_str)
 					index_b = com_str->indexOf("&", index_a);
 					if (index_b != -1) {
 						String tmp_str = com_str->substring(index_a + req_vars[ctr].offset, index_b);
-						req_vars[ctr].value = constrain((unsigned int)(tmp_str.toInt()), 0, 255);
+						req_vars[ctr].value = constrain((unsigned int)(tmp_str.toInt()), 0, req_vars[ctr].max);
 					}
 				}
 			}

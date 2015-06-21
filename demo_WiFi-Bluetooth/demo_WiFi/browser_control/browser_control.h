@@ -16,7 +16,8 @@
 #endif
 
 typedef struct REQ_VAR {
-    String name;
-    unsigned int value;
-    uint8_t offset;    
+	String name;
+	unsigned int value;
+	unsigned int max;
+	uint8_t offset;
 } REQ_VAR;
