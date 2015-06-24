@@ -16,6 +16,7 @@
 #define ESP_SLOW_CIOBAUD 9600UL
 #define ESP_FAST_CIOBAUD 115200UL
 #define ESP_TIMEOUT 10000UL
+#define ESP_PING_TIMEOUT 5000UL
 
 #include <stdint.h>
 #include <Adafruit_NeoPixel.h>
@@ -34,16 +35,18 @@ void setup(void)
 	strip.begin();
 	lamp_test();
 
-	bool ESP8266_OK = false;
+	bool ESP_OK = false;
 
 	// loop until we get the ESP8266 properly initialized & joined a network
-	while (ESP8266_OK == false) {
-		ESP8266_OK = init_ESP8266();
+	while (ESP_OK == false) {
+		ESP_OK = ESP_init();
 	}
 }
 
 void loop(void)
 {
+	static unsigned long last_ESP_ping = 0;
+
 	if (Serial.available()) {
 		char c = Serial.read();
 		if (c == '\n') {
@@ -53,6 +56,15 @@ void loop(void)
 		} else if (c != '\r')
 			command_str += c;
 	}
+
+	if ((millis() - last_ESP_ping) > ESP_PING_TIMEOUT) {
+		if (ESP_ping() == false) {
+			ESP_init();
+			return;
+		}
+		last_ESP_ping = millis();
+	}
+
 }
 
 void parseCommand(String * com_str)
@@ -82,7 +94,7 @@ void parseCommand(String * com_str)
 		Serial.print(11 + com_str->length() + 1 + 16 + NoD(com_str->length()) + 1 + 15 + NoD(request_ctr) + 1);
 		Serial.print(ESP_LINE_TERM);
 		if (wait_for("OK") != true) {
-			init_ESP8266();
+			ESP_init();
 			return;
 		}
 		Serial.print("\nYou sent: ");	// 11
@@ -95,7 +107,7 @@ void parseCommand(String * com_str)
 		Serial.print(request_ctr);
 		Serial.print(F("\n"));	// 1
 		if (wait_for("OK") != true) {
-			init_ESP8266();
+			ESP_init();
 			return;
 		}
 
@@ -107,12 +119,12 @@ void parseCommand(String * com_str)
 			Serial.print(F("14"));
 			Serial.print(ESP_LINE_TERM);
 			if (wait_for("OK") != true) {
-				init_ESP8266();
+				ESP_init();
 				return;
 			}
 			Serial.print(F("commands: tba\n"));	// 14
 			if (wait_for("OK") != true) {
-				init_ESP8266();
+				ESP_init();
 				return;
 			}
 		} else {
@@ -149,7 +161,7 @@ void parseCommand(String * com_str)
 			Serial.print(tx_data_package_length);
 			Serial.print(ESP_LINE_TERM);
 			if (wait_for("OK") != true) {
-				init_ESP8266();
+				ESP_init();
 				return;
 			}
 
@@ -160,7 +172,7 @@ void parseCommand(String * com_str)
 			}
 
 			if (wait_for("OK") != true) {
-				init_ESP8266();
+				ESP_init();
 				return;
 			}
 
@@ -192,12 +204,12 @@ void parseCommand(String * com_str)
 		Serial.print(F("9"));
 		Serial.print(ESP_LINE_TERM);
 		if (wait_for("OK") != true) {
-			init_ESP8266();
+			ESP_init();
 			return;
 		}
 		Serial.print(F("Bye Bye!\n"));	// 9
 		if (wait_for("OK") != true) {
-			init_ESP8266();
+			ESP_init();
 			return;
 		}
 		// close connection
@@ -205,7 +217,7 @@ void parseCommand(String * com_str)
 		Serial.print(5);	// close ALL connections. Just closing the current one leads to "busy p..." crap
 		Serial.print(ESP_LINE_TERM);
 		if (wait_for("OK") != true) {
-			init_ESP8266();
+			ESP_init();
 			return;
 		}
 	}
@@ -344,7 +356,7 @@ void lamp_test(void)
 
 }
 
-bool init_ESP8266(void)
+bool ESP_init(void)
 {
 	bool retval = true;
 
@@ -435,6 +447,20 @@ bool init_ESP8266(void)
 		strip.show();
 	}
 	clear_serial_buffer();
+
+	return retval;
+}
+
+bool ESP_ping(void)
+{
+	bool retval = true;
+
+	// anybody home?
+	Serial.print(F("AT"));
+	Serial.print(ESP_LINE_TERM);
+	if (wait_for("OK") != true) {
+		retval = false;	// this really should be replaced with "wait_for_OK()" !
+	}
 
 	return retval;
 }
