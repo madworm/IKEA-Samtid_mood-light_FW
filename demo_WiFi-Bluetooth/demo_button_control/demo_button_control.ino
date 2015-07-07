@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <Adafruit_NeoPixel.h>
 #include <ClickButton.h>
-#include "demo_firstlight.h"
+#include "demo_button_control.h"
 
 #define PIN 5			// adapted to IKEA-Samtid_mood-light hardware
 #define LEDS 64			// adjust to number of installed WS2812B [1-64]

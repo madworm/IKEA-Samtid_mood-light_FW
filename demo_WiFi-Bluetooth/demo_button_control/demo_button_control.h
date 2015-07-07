@@ -1,5 +1,5 @@
-#ifndef demo_firstlight_h
-#define demo_firstlight_h
+#ifndef demo_button_control_h
+#define demo_button_control_h
 
 typedef enum {
 	ALL,
