@@ -1,5 +1,5 @@
-#ifndef minimal_test_h
-#define minimal_test_h
+#ifndef browser_control_h
+#define browser_control_h
 
 #define E_BUTTON 11
 #define M_BUTTON 12
@@ -13,11 +13,11 @@
 #define STATE 6			// for Bluetooth HC-05 module
 #define ENABLE 6		// for ESP8266-1 module + adapter
 
-#endif
-
 typedef struct REQ_VAR {
 	String name;
 	unsigned int value;
 	unsigned int max;
 	uint8_t offset;
 } REQ_VAR;
+
+#endif
