@@ -24,7 +24,7 @@ while(true); do
 	GREEN=$((16#$GREEN));
 	BLUE=$(echo $RGB | cut --bytes=6,7);
 	BLUE=$((16#$BLUE));
-	echo "SET:mode=1&RED=$RED&GREEN=$GREEN&BLUE=$BLUE&";
-	echo "SET:mode=1&RED=$RED&GREEN=$GREEN&BLUE=$BLUE&" > $BT_INTERFACE;
+	echo "SET:mode=1&red=$RED&green=$GREEN&blue=$BLUE&";
+	echo "SET:mode=1&red=$RED&green=$GREEN&blue=$BLUE&" > $BT_INTERFACE;
 done;
 
