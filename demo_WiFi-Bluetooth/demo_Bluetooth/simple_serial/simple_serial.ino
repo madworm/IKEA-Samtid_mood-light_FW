@@ -14,8 +14,8 @@ void setup(void)
 {
 	strip.begin();
 	lamp_test();
-        Serial.begin(115200);
-        clear_serial_buffer();
+	Serial.begin(115200);
+	clear_serial_buffer();
 }
 
 void loop(void)
@@ -37,7 +37,8 @@ void parseCommand(String * com_str)
 
 	// set default values
 
-	REQ_VAR req_vars[6] = { {"mode=", 0, 16, 5}, {"start=", 0, (LEDS - 1), 6}, {"stop=", (LEDS - 1), (LEDS - 1), 5}, {"hue=", 0, 360, 4}, {"sat=", 255, 255, 4}, {"val=", 32, 255, 4} };
+	REQ_VAR req_vars[9] =
+	    { {"mode=", 0, 16, 5}, {"start=", 0, (LEDS - 1), 6}, {"stop=", (LEDS - 1), (LEDS - 1), 5}, {"hue=", 0, 360, 4}, {"sat=", 255, 255, 4}, {"val=", 32, 255, 4}, {"red=", 32, 255, 4}, {"green=", 32, 255, 6}, {"blue=", 32, 255, 5} };
 
 	if (index_of_SET != -1) {
 		// found the ":" in "SET:mode=0&start=0&..."
@@ -54,7 +55,7 @@ void parseCommand(String * com_str)
 		int index_a;
 		int index_b;
 
-		for (ctr = 0; ctr <= 5; ctr++) {
+		for (ctr = 0; ctr <= 8; ctr++) {
 			index_a = com_str->indexOf(req_vars[ctr].name);
 			if (index_a != -1) {
 				index_b = com_str->indexOf("&", index_a);
@@ -65,21 +66,25 @@ void parseCommand(String * com_str)
 			}
 		}
 
-		hsv_to_rgb(req_vars[3].value, req_vars[4].value, req_vars[5].value, rgb_values);
+		uint8_t which_led;
 
-		uint8_t red = rgb_values[0];
-		uint8_t green = rgb_values[1];
-		uint8_t blue = rgb_values[2];
-
-		switch (req_vars[0].value) {
-		case 0:
-			uint8_t which_led;
+		switch (req_vars[0].value) {	// switch mode
+		case 0:	// HSV
+			hsv_to_rgb(req_vars[3].value, req_vars[4].value, req_vars[5].value, rgb_values);
 
 			for (which_led = req_vars[1].value; which_led <= req_vars[2].value; which_led++) {
-				strip.setPixelColor(which_led, red, green, blue);
+				strip.setPixelColor(which_led, rgb_values[0], rgb_values[1], rgb_values[2]);	// H S V
 			}
 			strip.show();
 			break;
+
+		case 1:	// RGB
+			for (which_led = req_vars[1].value; which_led <= req_vars[2].value; which_led++) {
+				strip.setPixelColor(which_led, req_vars[6].value, req_vars[7].value, req_vars[8].value);	// R G B
+			}
+			strip.show();
+			break;
+
 		default:
 			break;
 		}
